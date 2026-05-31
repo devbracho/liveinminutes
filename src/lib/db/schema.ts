@@ -1,4 +1,17 @@
-import { pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { boolean, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+
+export const profiles = pgTable("profiles", {
+  id: uuid().primaryKey(),
+  email: text(),
+  isPremium: boolean().notNull().default(false),
+  premiumSince: timestamp({ withTimezone: true }),
+  premiumSource: varchar({ length: 32 }),
+  stripeCustomerId: text(),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Profile = typeof profiles.$inferSelect;
 
 export const guides = pgTable("guides", {
   id: uuid().primaryKey().defaultRandom(),

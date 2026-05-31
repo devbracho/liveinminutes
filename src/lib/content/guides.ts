@@ -10,6 +10,7 @@ const frontmatterSchema = z.object({
   description: z.string(),
   category: z.string(),
   order: z.number().default(0),
+  premium: z.boolean().default(false),
 });
 
 export type GuideFrontmatter = z.infer<typeof frontmatterSchema>;
