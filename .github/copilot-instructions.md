@@ -17,6 +17,27 @@ A teaching site that shows people how to get any app live in minutes, using a mo
 - **Deployment:** Vercel (preview per PR)
 - **CI:** GitHub Actions (`.github/workflows/ci.yml`) — Biome, tsc, build
 
+## Stay current — verify against live docs
+
+Training data ages quickly. Stack vendors (Next.js, React, Tailwind, shadcn, Supabase, Drizzle, Vercel, Biome) ship breaking changes and rename concepts often. Before suggesting any non-trivial API, config flag, CLI command, dashboard path, or environment variable name:
+
+1. **Prefer local sources first**: `node_modules/<pkg>/dist/docs/` (Next.js ships docs), package `README.md`, `CHANGELOG.md`, and TypeScript `.d.ts` files. These match the installed version exactly.
+2. **Then check official docs** via `fetch_webpage` for the *current* page (e.g. `nextjs.org/docs`, `supabase.com/docs`, `orm.drizzle.team`, `ui.shadcn.com`, `vercel.com/docs`, `biomejs.dev`). Do not rely on memorized URLs, CLI flags, or screenshots from older versions.
+3. **When the user shares a screenshot** of a vendor dashboard, treat it as the source of truth over training-data knowledge. UIs and key names (e.g. Supabase `anon` -> `publishable`, `service_role` -> `secret`) change.
+4. **State your source** when answering ("per the Supabase dashboard you shared", "per `node_modules/next/dist/docs/...`", "per `nextjs.org/docs/...` fetched just now"). If you couldn't verify, say so and flag the uncertainty before the user acts on it.
+5. **Never invent CLI flags or env var names.** If unsure, run `<tool> --help` or read the relevant doc page first.
+
+## Supabase API key naming (current)
+
+Supabase migrated from legacy keys to a new naming scheme. Use the new names everywhere:
+
+| New name (use this)                | Legacy name (do not use) | Where it goes                              |
+| ---------------------------------- | ------------------------ | ------------------------------------------ |
+| **Publishable** (`sb_publishable_…`) | `anon`                   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` (browser-safe with RLS) |
+| **Secret** (`sb_secret_…`)           | `service_role`           | `SUPABASE_SERVICE_ROLE_KEY` (server-only, bypasses RLS) |
+
+The env var names stay the same for compatibility; only the dashboard labels and key prefixes changed.
+
 ## Next.js 16 specifics
 
 This is Next.js 16, not 14 or 15. Read `node_modules/next/dist/docs/01-app/` before suggesting unfamiliar APIs. Notable points:
