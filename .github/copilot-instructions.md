@@ -7,7 +7,7 @@ A teaching site that shows people how to get any app live in minutes, using a mo
 - **Framework:** Next.js 16 (App Router, Turbopack) + React 19 + TypeScript strict
 - **Styling:** Tailwind CSS v4 + shadcn/ui (radix-nova preset, neutral base, CSS variables)
 - **Icons:** `lucide-react`
-- **Database:** Supabase (PostgreSQL)
+- **Database:** Supabase (PostgreSQL) — two free projects: `liveinminutes-dev` (used for local dev + Vercel previews) and `liveinminutes-prod` (Vercel production). Migrations live in `supabase/migrations/`; the Supabase GitHub integration auto-applies them to prod on merge to `main`.
 - **ORM:** Drizzle ORM (`drizzle-orm/postgres-js`) with snake_case casing, schema at `src/lib/db/schema.ts`
 - **Auth / storage / realtime:** `@supabase/ssr` (server) and `@supabase/supabase-js` (client)
 - **Forms:** React Hook Form + Zod via `@hookform/resolvers/zod`

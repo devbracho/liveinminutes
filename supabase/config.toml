@@ -1,0 +1,6 @@
+# Minimal Supabase config so the GitHub integration can find supabase/migrations/.
+# The GitHub integration auto-applies any new SQL files in supabase/migrations/
+# to the PROD database when commits land on `main`.
+# DEV migrations are applied locally with `pnpm db:migrate` against .env.local.
+
+project_id = "liveinminutes"
