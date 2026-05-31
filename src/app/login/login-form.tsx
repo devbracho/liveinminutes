@@ -5,7 +5,7 @@ import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { type AuthState, signInWithGoogle, signInWithMagicLink } from "@/lib/auth/actions";
+import { type AuthState, signInWithGitHub, signInWithMagicLink } from "@/lib/auth/actions";
 
 const initialState: AuthState = {};
 
@@ -18,11 +18,11 @@ function MagicLinkSubmit() {
   );
 }
 
-function GoogleSubmit() {
+function GitHubSubmit() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" variant="outline" className="w-full" disabled={pending}>
-      Continue with Google
+      Continue with GitHub
     </Button>
   );
 }
@@ -32,8 +32,8 @@ export function LoginForm() {
 
   return (
     <div className="space-y-6">
-      <form action={signInWithGoogle}>
-        <GoogleSubmit />
+      <form action={signInWithGitHub}>
+        <GitHubSubmit />
       </form>
 
       <div className="relative">

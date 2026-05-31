@@ -4,7 +4,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import type { ComponentProps } from "react";
+import { PremiumPaywall } from "@/components/premium-paywall";
 import { Badge } from "@/components/ui/badge";
+import { getUserPremiumStatus } from "@/lib/auth/premium";
 import { getGuide, getGuideSlugs } from "@/lib/content/guides";
 
 export async function generateStaticParams() {
@@ -68,6 +70,9 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
     notFound();
   }
 
+  const isPremium = guide.premium ?? false;
+  const hasAccess = !isPremium || (await getUserPremiumStatus());
+
   return (
     <main className="container mx-auto max-w-3xl px-4 py-16">
       <Link
@@ -87,7 +92,11 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
       </header>
 
       <article className="mt-8">
-        <MDXRemote source={guide.content} components={mdxComponents} />
+        {hasAccess ? (
+          <MDXRemote source={guide.content} components={mdxComponents} />
+        ) : (
+          <PremiumPaywall />
+        )}
       </article>
     </main>
   );

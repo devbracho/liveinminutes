@@ -49,12 +49,12 @@ export async function signInWithMagicLink(
   return { success: "Check your email for a magic link to sign in." };
 }
 
-export async function signInWithGoogle(): Promise<void> {
+export async function signInWithGitHub(): Promise<void> {
   const supabase = await createClient();
   const origin = await getOrigin();
 
   const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
+    provider: "github",
     options: { redirectTo: `${origin}/auth/callback` },
   });
 
