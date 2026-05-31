@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LiveInMinutes
 
-## Getting Started
+A teaching site that shows people how to take any web app from an empty folder to a live URL, using a modern, opinionated 2026 stack. The site itself is the reference implementation.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router, Turbopack) + **React 19** + **TypeScript** strict
+- **Tailwind CSS v4** + **shadcn/ui** + **lucide-react**
+- **Supabase** (PostgreSQL, auth, storage) + **Drizzle ORM**
+- **React Hook Form** + **Zod**
+- **MDX** content via `next-mdx-remote` + `gray-matter`
+- **Biome** for lint + format
+- **pnpm** package manager
+- **GitHub Actions** CI + **Vercel** deploy
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+cp .env.example .env.local   # fill in Supabase values
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command            | What it does                                |
+| ------------------ | ------------------------------------------- |
+| `pnpm dev`         | Start the dev server (Turbopack)            |
+| `pnpm build`       | Production build                            |
+| `pnpm start`       | Run the production build                    |
+| `pnpm check`       | Biome lint + format check                   |
+| `pnpm format`      | Biome write (format + safe fixes)           |
+| `pnpm typecheck`   | `tsc --noEmit`                              |
+| `pnpm db:generate` | Drizzle: generate SQL migrations            |
+| `pnpm db:migrate`  | Drizzle: apply pending migrations           |
+| `pnpm db:studio`   | Open Drizzle Studio                         |
 
-## Learn More
+## Project layout
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+  app/                 # Next.js App Router routes
+  components/          # Shared React components (shadcn under ui/)
+  content/guides/      # MDX guides (kebab-case slugs)
+  lib/
+    db/                # Drizzle schema + client
+    supabase/          # Supabase server + browser clients
+    utils.ts           # cn() helper
+.github/
+  workflows/ci.yml     # Lint, typecheck, build on every PR
+  copilot-instructions.md
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Contributing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Stack decisions and conventions are documented in [`.github/copilot-instructions.md`](.github/copilot-instructions.md). Keep changes consistent with that file or update it in the same PR.

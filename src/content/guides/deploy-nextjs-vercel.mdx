@@ -1,0 +1,29 @@
+---
+title: "Deploy a Next.js app to Vercel"
+description: "From git init to a public URL in under 5 minutes."
+category: "nextjs"
+order: 1
+---
+
+You will go from an empty folder to a live URL on Vercel's free tier.
+
+## 1. Scaffold the project
+
+```bash
+pnpm create next-app@latest my-app --ts --tailwind --app --src-dir --use-pnpm
+cd my-app
+```
+
+## 2. Push to GitHub
+
+```bash
+gh repo create my-app --public --source=. --remote=origin --push
+```
+
+## 3. Deploy
+
+1. Open https://vercel.com/new
+2. Import the repository.
+3. Click **Deploy**.
+
+That's it. Every push to `main` ships to production, every PR gets its own preview URL.
