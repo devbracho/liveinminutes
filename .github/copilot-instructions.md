@@ -35,6 +35,28 @@ This is Next.js 16, not 14 or 15. Read `node_modules/next/dist/docs/01-app/` bef
 - Files: kebab-case for files, PascalCase for React components, camelCase for variables/functions.
 - Imports: use `import type` for type-only imports (enforced by Biome).
 
+## Security & secrets
+
+Treat this like a real production app from day one.
+
+**Classification:**
+
+- **Public (safe in browser, may have `NEXT_PUBLIC_` prefix):** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL`.
+- **Secret (server-only, must NEVER have `NEXT_PUBLIC_` prefix and must NEVER be imported into a client component):** `DATABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, any third-party API key.
+
+**Rules:**
+
+- Never commit a real secret. Only `.env.example` (with placeholder values) is tracked.
+- Never prefix a secret with `NEXT_PUBLIC_`. That ships it to every visitor's browser.
+- Never import `@/lib/db`, `@/lib/supabase/server`, or anything that reads a secret env var from a `"use client"` file. Use Server Components, Route Handlers, or Server Actions.
+- The Supabase anon key is *meant* to be public. It is safe in the browser **only when every table has Row Level Security (RLS) enabled with explicit policies**. New tables must enable RLS in the same migration that creates them: `alter table <name> enable row level security;` plus at least one policy.
+- The `service_role` key bypasses RLS. Use it only in trusted server code (Route Handlers, Server Actions, scheduled jobs) and only when RLS-based access is insufficient.
+- Auth sessions use Supabase's short-lived JWT access tokens (~1h) + rotating refresh tokens via `@supabase/ssr`. Do not roll your own session handling.
+- Validate every external boundary with Zod (form input, route params, `searchParams`, API payloads, webhook bodies).
+- Rotate any key that may have been exposed (git history, screenshot, log) immediately via the Supabase dashboard. Then update Vercel env vars and run `vercel env pull` locally.
+- Production env vars live in Vercel (encrypted, scoped per environment). CI secrets live in GitHub Actions repo secrets. Never hardcode either.
+- Do not log request bodies, cookies, headers, or env values. Redact PII in error reports.
+
 ## What NOT to do
 
 - Do not add ESLint, Prettier, Prisma, npm, yarn, Contentlayer, `styled-components`, or CSS modules.
