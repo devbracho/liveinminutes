@@ -1,0 +1,6 @@
+# Code owners for liveinminutes
+# Each line is a file pattern followed by one or more owners.
+# These owners are requested for review when someone opens a PR.
+
+# Default owner for everything in the repo
+*       @devbracho
