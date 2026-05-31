@@ -3,7 +3,16 @@
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!**/node_modules", "!**/.next", "!**/drizzle", "!**/dist", "!**/*.css"]
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/.next",
+      "!**/drizzle",
+      "!**/dist",
+      "!**/*.css",
+      "!**/playwright-report",
+      "!**/test-results"
+    ]
   },
   "formatter": {
     "enabled": true,
