@@ -25,7 +25,7 @@ export default async function LoginPage() {
         </Link>
         <h1 className="mt-6 text-2xl font-bold tracking-tight">Welcome back</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Sign in with Google or a one-time magic link. No passwords to remember.
+          Sign in with GitHub or a one-time magic link. No passwords to remember.
         </p>
       </div>
 
