@@ -87,3 +87,40 @@ export function parseOrderId(orderId: string): { userId: string; plan: PlanKey }
   if (!userId || (plan !== "monthly" && plan !== "lifetime")) return null;
   return { userId, plan };
 }
+
+type CreateCustomInvoiceArgs = {
+  priceAmount: number;
+  description: string;
+  orderId: string;
+  ipnCallbackUrl: string;
+  successUrl: string;
+  cancelUrl: string;
+};
+
+export async function createCustomInvoice(args: CreateCustomInvoiceArgs): Promise<string> {
+  const apiKey = process.env.NOWPAYMENTS_API_KEY;
+  if (!apiKey) throw new Error("NOWPAYMENTS_API_KEY is not set.");
+
+  const { priceAmount, description, orderId, ipnCallbackUrl, successUrl, cancelUrl } = args;
+
+  const res = await fetch(`${API_BASE}/invoice`, {
+    method: "POST",
+    headers: { "x-api-key": apiKey, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      price_amount: priceAmount,
+      price_currency: "usd",
+      order_id: orderId,
+      order_description: description,
+      ipn_callback_url: ipnCallbackUrl,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+    }),
+  });
+
+  if (!res.ok) throw new Error(`NOWPayments invoice failed: ${res.status}`);
+
+  const data = (await res.json()) as { invoice_url?: string };
+  if (!data.invoice_url) throw new Error("NOWPayments did not return an invoice URL.");
+
+  return data.invoice_url;
+}

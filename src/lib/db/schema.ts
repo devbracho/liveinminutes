@@ -35,3 +35,24 @@ export const guideProgress = pgTable("guide_progress", {
 
 export type Guide = typeof guides.$inferSelect;
 export type NewGuide = typeof guides.$inferInsert;
+
+export const tasks = pgTable("tasks", {
+  id: uuid().primaryKey().defaultRandom(),
+  userId: uuid().notNull(),
+  title: text().notNull(),
+  completed: boolean().notNull().default(false),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Task = typeof tasks.$inferSelect;
+
+export const messages = pgTable("messages", {
+  id: uuid().primaryKey().defaultRandom(),
+  userId: uuid().notNull(),
+  username: text().notNull(),
+  content: text().notNull(),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Message = typeof messages.$inferSelect;
