@@ -1,6 +1,7 @@
 "use client";
 
-import { ShoppingCart, X } from "lucide-react";
+import { Lock, ShoppingCart, X } from "lucide-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -8,12 +9,26 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Product } from "./products";
 
-export function StoreClient({ products, cartIds }: { products: Product[]; cartIds: string[] }) {
+export function StoreClient({
+  products,
+  cartIds,
+  isPremium,
+}: {
+  products: Product[];
+  cartIds: string[];
+  isPremium: boolean;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [checkingOut, setCheckingOut] = useState(false);
 
-  const cartItems = cartIds
+  // Only include items the user is allowed to buy
+  const allowedCartIds = cartIds.filter((id) => {
+    const p = products.find((x) => x.id === id);
+    return p && (!p.requiresPremium || isPremium);
+  });
+
+  const cartItems = allowedCartIds
     .map((id) => products.find((p) => p.id === id))
     .filter((p): p is Product => p !== undefined);
 
@@ -39,12 +54,12 @@ export function StoreClient({ products, cartIds }: { products: Product[]; cartId
   }
 
   async function handleCheckout() {
-    if (cartIds.length === 0 || checkingOut) return;
+    if (allowedCartIds.length === 0 || checkingOut) return;
     setCheckingOut(true);
     const res = await fetch("/api/checkout/store", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items: cartIds }),
+      body: JSON.stringify({ items: allowedCartIds }),
     });
     if (res.ok) {
       const { url } = (await res.json()) as { url: string };
@@ -58,27 +73,47 @@ export function StoreClient({ products, cartIds }: { products: Product[]; cartId
     <div className="mt-8 grid gap-8 lg:grid-cols-3">
       <div className="lg:col-span-2 space-y-4">
         {products.map((product) => {
+          const locked = !!product.requiresPremium && !isPremium;
           const inCart = cartIds.includes(product.id);
+
           return (
-            <Card key={product.id}>
+            <Card key={product.id} className={locked ? "opacity-75" : ""}>
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl">{product.emoji}</span>
+                    <span className="text-2xl">{locked ? "🔒" : product.emoji}</span>
                     <div>
-                      <CardTitle className="text-base">{product.name}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-base">{product.name}</CardTitle>
+                        {product.requiresPremium && (
+                          <Badge variant="secondary" className="text-xs">
+                            Premium
+                          </Badge>
+                        )}
+                      </div>
                       <CardDescription className="mt-0.5">{product.description}</CardDescription>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="font-semibold">${product.price}</span>
-                    <Button
-                      size="sm"
-                      variant={inCart ? "secondary" : "default"}
-                      onClick={() => (inCart ? removeFromCart(product.id) : addToCart(product.id))}
-                    >
-                      {inCart ? "Remove" : "Add"}
-                    </Button>
+                    {locked ? (
+                      <Button size="sm" variant="outline" asChild>
+                        <Link href="/upgrade">
+                          <Lock className="size-3.5 mr-1" />
+                          Unlock
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant={inCart ? "secondary" : "default"}
+                        onClick={() =>
+                          inCart ? removeFromCart(product.id) : addToCart(product.id)
+                        }
+                      >
+                        {inCart ? "Remove" : "Add"}
+                      </Button>
+                    )}
                   </div>
                 </div>
               </CardHeader>

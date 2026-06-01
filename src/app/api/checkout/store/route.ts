@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { PRODUCTS } from "@/app/demos/store/products";
+import { getUserPremiumStatus } from "@/lib/auth/premium";
 import { createCustomInvoice } from "@/lib/payments/nowpayments";
 
 const bodySchema = z.object({
@@ -32,6 +33,17 @@ export async function POST(request: Request) {
 
   if (cartProducts.length === 0) {
     return NextResponse.json({ error: "No valid products in cart." }, { status: 400 });
+  }
+
+  const hasPremiumItems = cartProducts.some((p) => p.requiresPremium);
+  if (hasPremiumItems) {
+    const isPremium = await getUserPremiumStatus();
+    if (!isPremium) {
+      return NextResponse.json(
+        { error: "Premium membership required to purchase these items." },
+        { status: 403 },
+      );
+    }
   }
 
   const total = cartProducts.reduce((sum, p) => sum + p.price, 0);
