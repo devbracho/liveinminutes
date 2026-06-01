@@ -49,7 +49,9 @@ export async function grantPremium(
     .single();
 
   if (lookupError || !profile) {
-    return { error: `No account found for ${parsed.data.email}. The user must sign in at least once before premium can be granted.` };
+    return {
+      error: `No account found for ${parsed.data.email}. The user must sign in at least once before premium can be granted.`,
+    };
   }
 
   const { error } = await supabaseAdmin
