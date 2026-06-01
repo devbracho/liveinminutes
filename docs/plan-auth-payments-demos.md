@@ -29,26 +29,31 @@ Status legend: `[ ]` not started, `[~]` in progress, `[x]` done.
 
 ## Phase 2: Premium model + manual grant
 
-- [ ] Drizzle migration: `profiles` table keyed to `auth.users.id` with `is_premium`,
+- [x] Drizzle migration: `profiles` table keyed to `auth.users.id` with `is_premium`,
       `premium_since`, `premium_source` ('manual' | 'stripe'), `stripe_customer_id`.
-- [ ] Enable RLS in the same migration: user can read own row; only `service_role` writes
+- [x] Enable RLS in the same migration: user can read own row; only `service_role` writes
       `is_premium`.
-- [ ] DB trigger: auto-create a `profiles` row on new `auth.users` signup.
-- [ ] Admin-only Server Action to flip `is_premium` (allowlist of admin user IDs via env var).
-- [ ] `requirePremium()` helper + paywall card for non-premium users.
-- [ ] Premium guides via MDX frontmatter (`premium: true`) wired through the guides loader.
+- [x] DB trigger: auto-create a `profiles` row on new `auth.users` signup.
+- [x] Admin-only Server Action to flip `is_premium` (email allowlist via `ADMIN_EMAILS`).
+- [x] `getUserPremiumStatus()` helper + paywall card for non-premium users.
+- [x] Premium guides via MDX frontmatter (`premium: true`) wired through the guides loader.
 
-## Phase 3: Stripe subscription integration
+## Phase 3: Stripe payments (subscription + lifetime)
 
-- [ ] Add `stripe` SDK; one Premium product + monthly price.
-- [ ] `POST /api/checkout` creates a Checkout Session (`mode: subscription`) and redirects.
-- [ ] `POST /api/stripe/webhook` (raw body, signature-verified) handles
+- [x] Add `stripe` SDK; one Premium product with a $5/mo recurring price and a $9 one-time price.
+- [x] `POST /api/checkout` creates a Checkout Session (`mode: subscription` for monthly,
+      `mode: payment` for lifetime) and returns the redirect URL. Creates/stores the Stripe
+      customer id on the profile.
+- [x] `POST /api/stripe/webhook` (raw body, signature-verified) handles
       `checkout.session.completed`, `invoice.paid`, `invoice.payment_failed`,
-      `customer.subscription.deleted`; writes `is_premium` via `service_role`.
-- [ ] "Manage billing" button -> Stripe customer portal.
-- [ ] Env vars (server-only): `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID`.
-      Add placeholders to `.env.example`.
-- [ ] Local test with Stripe CLI (`stripe listen --forward-to`).
+      `customer.subscription.deleted`; writes `is_premium` via `service_role`, matched by
+      `stripe_customer_id`.
+- [x] "Manage billing" button -> Stripe customer portal (`POST /api/billing-portal`).
+- [x] `/upgrade` page shows monthly + lifetime plans (or Manage billing when already premium).
+- [x] Env vars (server-only): `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
+      `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_LIFETIME`. Placeholders in `.env.example`.
+- [ ] Local test with Stripe CLI (`stripe listen --forward-to localhost:3000/api/stripe/webhook`).
+- [ ] Production: create the Stripe webhook endpoint and set the four env vars in Vercel.
 
 ## Phase 4: Make the demo apps run
 

@@ -1,8 +1,8 @@
 "use server";
 
-import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { isAdmin } from "@/lib/auth/is-admin";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getUser } from "@/lib/supabase/server";
 
 const grantSchema = z.object({
@@ -28,11 +28,7 @@ export async function grantPremium(
     return { error: parsed.error.issues[0]?.message ?? "Invalid email." };
   }
 
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
-    { auth: { persistSession: false } },
-  );
+  const supabaseAdmin = createAdminClient();
 
   const { data: profile, error: lookupError } = await supabaseAdmin
     .from("profiles")
