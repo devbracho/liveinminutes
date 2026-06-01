@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { getUserPremiumStatus } from "@/lib/auth/premium";
+import { getUserPremiumDetails } from "@/lib/auth/premium";
 import { getUser } from "@/lib/supabase/server";
-import { ManageBillingButton, UpgradeButtons } from "./upgrade-buttons";
+import { UpgradeButtons } from "./upgrade-buttons";
 
 export const metadata: Metadata = {
   title: "Upgrade to Premium",
@@ -12,7 +12,9 @@ export const metadata: Metadata = {
 
 export default async function UpgradePage() {
   const user = await getUser();
-  const isPremium = user ? await getUserPremiumStatus() : false;
+  const premium = user
+    ? await getUserPremiumDetails()
+    : { isPremium: false, expiresAt: null, isLifetime: false };
 
   return (
     <main className="container mx-auto max-w-2xl px-4 py-24 text-center">
@@ -22,13 +24,19 @@ export default async function UpgradePage() {
       </p>
 
       <div className="mt-10">
-        {isPremium ? (
+        {premium.isPremium ? (
           <div className="rounded-xl border border-border bg-muted/30 px-8 py-10">
             <p className="text-2xl font-bold">You're premium</p>
-            <p className="mt-2 mb-6 text-muted-foreground">
-              Thanks for supporting LiveInMinutes. You have full access to every guide.
+            <p className="mt-2 text-muted-foreground">
+              {premium.isLifetime
+                ? "You have lifetime access to every guide. Thanks for the support."
+                : `Your access is active until ${premium.expiresAt?.toLocaleDateString()}.`}
             </p>
-            <ManageBillingButton />
+            {premium.isLifetime ? null : (
+              <div className="mt-6">
+                <UpgradeButtons />
+              </div>
+            )}
           </div>
         ) : user ? (
           <UpgradeButtons />
