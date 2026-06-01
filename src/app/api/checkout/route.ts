@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getStripe, PRICE_IDS } from "@/lib/stripe/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { buildOrderId, createInvoice } from "@/lib/payments/nowpayments";
 import { getUser } from "@/lib/supabase/server";
 
 const bodySchema = z.object({
@@ -27,48 +26,18 @@ export async function POST(request: Request) {
   }
 
   const { plan } = parsed.data;
-  const priceId = PRICE_IDS[plan];
-  if (!priceId) {
-    return NextResponse.json({ error: "Plan is not configured." }, { status: 500 });
-  }
-
-  const supabaseAdmin = createAdminClient();
-  const { data: profile } = await supabaseAdmin
-    .from("profiles")
-    .select("stripe_customer_id")
-    .eq("id", user.id)
-    .single();
-
-  const stripe = getStripe();
-
-  let customerId = profile?.stripe_customer_id ?? undefined;
-  if (!customerId) {
-    const customer = await stripe.customers.create({
-      email: user.email,
-      metadata: { supabase_user_id: user.id },
-    });
-    customerId = customer.id;
-    await supabaseAdmin
-      .from("profiles")
-      .update({ stripe_customer_id: customerId })
-      .eq("id", user.id);
-  }
-
   const origin = getOrigin(request);
 
-  const session = await stripe.checkout.sessions.create({
-    customer: customerId,
-    mode: plan === "monthly" ? "subscription" : "payment",
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${origin}/upgrade?status=success`,
-    cancel_url: `${origin}/upgrade?status=cancelled`,
-    client_reference_id: user.id,
-    metadata: { supabase_user_id: user.id, plan },
-  });
-
-  if (!session.url) {
-    return NextResponse.json({ error: "Could not create checkout session." }, { status: 500 });
+  try {
+    const url = await createInvoice({
+      plan,
+      orderId: buildOrderId(user.id, plan),
+      ipnCallbackUrl: `${origin}/api/payments/nowpayments/webhook`,
+      successUrl: `${origin}/upgrade?status=success`,
+      cancelUrl: `${origin}/upgrade?status=cancelled`,
+    });
+    return NextResponse.json({ url });
+  } catch {
+    return NextResponse.json({ error: "Could not start checkout." }, { status: 500 });
   }
-
-  return NextResponse.json({ url: session.url });
 }

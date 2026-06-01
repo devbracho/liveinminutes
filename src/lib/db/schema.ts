@@ -5,9 +5,8 @@ export const profiles = pgTable("profiles", {
   email: text(),
   isPremium: boolean().notNull().default(false),
   premiumSince: timestamp({ withTimezone: true }),
+  premiumExpiresAt: timestamp({ withTimezone: true }),
   premiumSource: varchar({ length: 32 }),
-  stripeCustomerId: text(),
-  stripeSubscriptionId: text(),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 });
