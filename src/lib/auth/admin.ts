@@ -14,7 +14,7 @@ function isAdmin(userId: string): boolean {
 }
 
 const grantSchema = z.object({
-  userId: z.string().uuid(),
+  email: z.string().email("Enter a valid email address."),
 });
 
 export type AdminActionState = {
@@ -31,9 +31,9 @@ export async function grantPremium(
     return { error: "Not authorised." };
   }
 
-  const parsed = grantSchema.safeParse({ userId: formData.get("userId") });
+  const parsed = grantSchema.safeParse({ email: formData.get("email") });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid user ID." };
+    return { error: parsed.error.issues[0]?.message ?? "Invalid email." };
   }
 
   const supabaseAdmin = createClient(
@@ -42,6 +42,16 @@ export async function grantPremium(
     { auth: { persistSession: false } },
   );
 
+  const { data: profile, error: lookupError } = await supabaseAdmin
+    .from("profiles")
+    .select("id")
+    .eq("email", parsed.data.email)
+    .single();
+
+  if (lookupError || !profile) {
+    return { error: `No user found with email ${parsed.data.email}.` };
+  }
+
   const { error } = await supabaseAdmin
     .from("profiles")
     .update({
@@ -49,11 +59,11 @@ export async function grantPremium(
       premium_since: new Date().toISOString(),
       premium_source: "manual",
     })
-    .eq("id", parsed.data.userId);
+    .eq("id", profile.id);
 
   if (error) {
     return { error: error.message };
   }
 
-  return { success: `Premium granted to ${parsed.data.userId}.` };
+  return { success: `Premium granted to ${parsed.data.email}.` };
 }

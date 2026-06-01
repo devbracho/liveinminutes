@@ -24,11 +24,13 @@ export function GrantPremiumForm() {
   return (
     <form action={formAction} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="userId">User UUID</Label>
+        <Label htmlFor="email">Email</Label>
         <Input
-          id="userId"
-          name="userId"
-          placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="off"
+          placeholder="user@example.com"
           required
         />
       </div>
