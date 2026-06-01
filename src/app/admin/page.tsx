@@ -1,16 +1,12 @@
 import { redirect } from "next/navigation";
+import { isAdmin } from "@/lib/auth/is-admin";
 import { getUser } from "@/lib/supabase/server";
 import { GrantPremiumForm } from "./grant-premium-form";
-
-const adminIds = (process.env.ADMIN_USER_IDS ?? "")
-  .split(",")
-  .map((s) => s.trim())
-  .filter(Boolean);
 
 export default async function AdminPage() {
   const user = await getUser();
 
-  if (!user || !adminIds.includes(user.id)) {
+  if (!isAdmin(user)) {
     redirect("/");
   }
 

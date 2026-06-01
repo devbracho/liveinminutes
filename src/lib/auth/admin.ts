@@ -2,16 +2,8 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { isAdmin } from "@/lib/auth/is-admin";
 import { getUser } from "@/lib/supabase/server";
-
-const adminIds = (process.env.ADMIN_USER_IDS ?? "")
-  .split(",")
-  .map((s) => s.trim())
-  .filter(Boolean);
-
-function isAdmin(userId: string): boolean {
-  return adminIds.includes(userId);
-}
 
 const grantSchema = z.object({
   email: z.string().email("Enter a valid email address."),
@@ -27,7 +19,7 @@ export async function grantPremium(
   formData: FormData,
 ): Promise<AdminActionState> {
   const caller = await getUser();
-  if (!caller || !isAdmin(caller.id)) {
+  if (!isAdmin(caller)) {
     return { error: "Not authorised." };
   }
 
