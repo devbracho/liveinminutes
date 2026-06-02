@@ -5,7 +5,11 @@ const adminEmails = (process.env.ADMIN_EMAILS ?? "")
   .map((s) => s.trim().toLowerCase())
   .filter(Boolean);
 
+export function isAdminEmail(email: string | null | undefined): boolean {
+  const normalized = email?.toLowerCase();
+  return normalized !== undefined && adminEmails.includes(normalized);
+}
+
 export function isAdmin(user: User | null): boolean {
-  const email = user?.email?.toLowerCase();
-  return email !== undefined && adminEmails.includes(email);
+  return isAdminEmail(user?.email);
 }

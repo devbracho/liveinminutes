@@ -1,26 +1,8 @@
-import { createClient } from "@/lib/supabase/server";
+import { getProfileAccess, hasPremiumAccess } from "@/lib/auth/roles";
 
 export async function getUserPremiumStatus(): Promise<boolean> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return false;
-
-  const { data } = await supabase
-    .from("profiles")
-    .select("is_premium, premium_expires_at")
-    .eq("id", user.id)
-    .single();
-
-  if (data?.is_premium !== true) return false;
-
-  if (data.premium_expires_at && new Date(data.premium_expires_at) <= new Date()) {
-    return false;
-  }
-
-  return true;
+  const access = await getProfileAccess();
+  return hasPremiumAccess(access);
 }
 
 export type PremiumDetails = {
@@ -30,27 +12,14 @@ export type PremiumDetails = {
 };
 
 export async function getUserPremiumDetails(): Promise<PremiumDetails> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const access = await getProfileAccess();
 
-  if (!user) return { isPremium: false, expiresAt: null, isLifetime: false };
-
-  const { data } = await supabase
-    .from("profiles")
-    .select("is_premium, premium_expires_at")
-    .eq("id", user.id)
-    .single();
-
-  if (data?.is_premium !== true) {
-    return { isPremium: false, expiresAt: null, isLifetime: false };
+  if (!hasPremiumAccess(access)) {
+    return { isPremium: false, expiresAt: access?.premiumExpiresAt ?? null, isLifetime: false };
   }
 
-  const expiresAt = data.premium_expires_at ? new Date(data.premium_expires_at) : null;
-  if (expiresAt && expiresAt <= new Date()) {
-    return { isPremium: false, expiresAt, isLifetime: false };
-  }
+  const roleBased = access?.role === "premium" || access?.role === "admin";
+  const expiresAt = access?.premiumExpiresAt ?? null;
 
-  return { isPremium: true, expiresAt, isLifetime: expiresAt === null };
+  return { isPremium: true, expiresAt, isLifetime: roleBased || expiresAt === null };
 }
