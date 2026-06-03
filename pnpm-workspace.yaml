@@ -1,3 +1,9 @@
-ignoredBuiltDependencies:
-  - sharp
-  - unrs-resolver
+overrides:
+  postcss: ">=8.5.10"
+  esbuild: ">=0.25.0"
+
+allowBuilds:
+  esbuild: true
+  msw: true
+  sharp: false
+  unrs-resolver: false
