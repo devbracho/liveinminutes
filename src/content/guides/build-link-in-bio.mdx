@@ -1,0 +1,127 @@
+---
+title: "Build a link-in-bio page with QR code"
+description: "A single page of links with a live preview and a scannable QR code — client state only."
+category: "demos"
+order: 17
+---
+
+You will build a link-in-bio editor where users fill in their name, bio, and links, see a live preview, and generate a QR code pointing at their deployed URL. No database required.
+
+## 1. State shape
+
+```ts
+type Link = { id: string; label: string; url: string };
+
+type Profile = {
+  name: string;
+  bio: string;
+  avatarUrl: string;
+  links: Link[];
+};
+
+const [profile, setProfile] = useState<Profile>({
+  name: "",
+  bio: "",
+  avatarUrl: "",
+  links: [],
+});
+```
+
+## 2. Live preview — two-column layout
+
+Split the screen: editor on the left, phone-frame preview on the right. Both read from the same state so they stay in sync:
+
+```tsx
+<div className="grid gap-8 lg:grid-cols-2">
+  <ProfileEditor profile={profile} onChange={setProfile} />
+  <PhonePreview profile={profile} />
+</div>
+```
+
+## 3. Add and reorder links
+
+```ts
+function addLink() {
+  setProfile((prev) => ({
+    ...prev,
+    links: [
+      ...prev.links,
+      { id: crypto.randomUUID(), label: "", url: "" },
+    ],
+  }));
+}
+
+function removeLink(id: string) {
+  setProfile((prev) => ({
+    ...prev,
+    links: prev.links.filter((l) => l.id !== id),
+  }));
+}
+
+function updateLink(id: string, field: "label" | "url", value: string) {
+  setProfile((prev) => ({
+    ...prev,
+    links: prev.links.map((l) => (l.id === id ? { ...l, [field]: value } : l)),
+  }));
+}
+```
+
+## 4. QR code
+
+Install a lightweight QR library:
+
+```bash
+pnpm add qrcode.react
+```
+
+Render the QR code pointing at the live URL — users replace this with their own deployed URL:
+
+```tsx
+import { QRCodeSVG } from "qrcode.react";
+
+<QRCodeSVG
+  value={`https://your-app.vercel.app`}
+  size={180}
+  className="rounded-lg"
+/>
+```
+
+## 5. Avatar with `next/image`
+
+Use Next.js image optimization for the avatar. Fall back to initials if no URL is set:
+
+```tsx
+{profile.avatarUrl ? (
+  <Image
+    src={profile.avatarUrl}
+    alt={profile.name}
+    width={80}
+    height={80}
+    className="rounded-full object-cover"
+  />
+) : (
+  <div className="size-20 rounded-full bg-muted flex items-center justify-center text-2xl font-bold">
+    {profile.name.charAt(0).toUpperCase() || "?"}
+  </div>
+)}
+```
+
+## 6. Phone frame preview
+
+A simple div with fixed aspect ratio and rounded corners creates a convincing phone frame:
+
+```tsx
+<div className="mx-auto w-64 rounded-[2.5rem] border-4 border-foreground/20 bg-background shadow-2xl overflow-hidden">
+  <div className="h-[560px] overflow-y-auto p-6 text-center">
+    {/* avatar, name, bio, links */}
+  </div>
+</div>
+```
+
+## 7. Deploy
+
+```bash
+gh repo create my-link-bio --public --source=. --remote=origin --push
+```
+
+Import at [vercel.com/new](https://vercel.com/new), deploy with zero env vars, and update the QR code value to your live URL. Share the QR code on Instagram, Twitter, or print it out.

@@ -21,6 +21,7 @@ export const metadata: Metadata = {
 const demos = [
   {
     href: "/demos/tasks",
+    guide: "/guides/build-task-tracker",
     icon: CheckSquare,
     title: "Task tracker",
     description: "CRUD with Server Actions, Drizzle, and optimistic UI. The classic starter.",
@@ -29,6 +30,7 @@ const demos = [
   },
   {
     href: "/demos/chat",
+    guide: "/guides/build-realtime-chat",
     icon: MessageSquare,
     title: "Realtime chat",
     description: "Supabase Realtime channels with row-level security and presence.",
@@ -38,6 +40,7 @@ const demos = [
   },
   {
     href: "/demos/dashboard",
+    guide: "/guides/build-analytics-dashboard",
     icon: LayoutDashboard,
     title: "Analytics dashboard",
     description: "Server Components streaming charts from Postgres with suspense boundaries.",
@@ -47,6 +50,7 @@ const demos = [
   },
   {
     href: "/demos/store",
+    guide: "/guides/build-storefront",
     icon: ShoppingCart,
     title: "Storefront",
     description: "Product catalog, cart in URL state, and checkout with validated payloads.",
@@ -55,6 +59,7 @@ const demos = [
   },
   {
     href: "/demos/timeclock",
+    guide: "/guides/build-time-clock",
     icon: Clock,
     title: "Employee time clock",
     description: "Staff clock in and out of shifts. Per-user time entries secured with RLS.",
@@ -63,6 +68,7 @@ const demos = [
   },
   {
     href: "/demos/booking",
+    guide: "/guides/build-appointment-booking",
     icon: CalendarClock,
     title: "Appointment booking",
     description: "Schedule, confirm, and cancel appointments with validated, per-user data.",
@@ -71,6 +77,7 @@ const demos = [
   },
   {
     href: "/demos/invoice",
+    guide: "/guides/build-invoice-generator",
     icon: FileText,
     title: "Invoice generator",
     description: "Build line-item invoices with live totals and print to PDF. No backend needed.",
@@ -79,6 +86,7 @@ const demos = [
   },
   {
     href: "/demos/links",
+    guide: "/guides/build-link-in-bio",
     icon: Link2,
     title: "Link-in-bio + QR",
     description: "A single page of links with a live preview and a scannable QR code.",
@@ -104,10 +112,11 @@ export default function DemosPage() {
       </div>
 
       <div className="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2">
-        {demos.map(({ href, icon: Icon, title, description, stack, premium }) => (
-          <Link key={title} href={href} className="group">
-            <Card className="h-full transition-shadow group-hover:shadow-md">
-              <CardHeader>
+        {demos.map(({ href, guide, icon: Icon, title, description, stack, premium }) => (
+          <div key={title} className="group relative">
+            <Card className="h-full transition-shadow group-hover:shadow-md flex flex-col">
+              <Link href={href} className="absolute inset-0 rounded-[inherit]" aria-label={title} />
+              <CardHeader className="flex-1">
                 <div className="flex items-center justify-between">
                   <Icon className="size-6 text-primary" />
                   <div className="flex gap-1.5">
@@ -134,8 +143,16 @@ export default function DemosPage() {
                   ))}
                 </div>
               </CardHeader>
+              <div className="px-6 pb-5">
+                <Link
+                  href={guide}
+                  className="relative z-10 inline-flex items-center gap-1 text-xs font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  Get live in minutes →
+                </Link>
+              </div>
             </Card>
-          </Link>
+          </div>
         ))}
       </div>
     </main>

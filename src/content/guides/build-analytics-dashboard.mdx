@@ -1,0 +1,111 @@
+---
+title: "Build a streaming analytics dashboard"
+description: "Server Components stream independent stat cards from Postgres using Suspense boundaries."
+category: "demos"
+order: 12
+---
+
+You will build a dashboard where each stat card is an async Server Component. They stream to the browser independently — slow queries don't block fast ones, and the page is never blank.
+
+## The key idea: one component = one query
+
+Instead of one big query that fetches everything, each stat is its own async component. Wrap each in `<Suspense>` with a skeleton fallback:
+
+```tsx
+<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+  <Suspense fallback={<StatSkeleton />}>
+    <TotalTasksStat userId={user.id} />
+  </Suspense>
+  <Suspense fallback={<StatSkeleton />}>
+    <CompletedTasksStat userId={user.id} />
+  </Suspense>
+  {/* more stat cards… */}
+</div>
+```
+
+React starts streaming the page shell immediately. Each `<Suspense>` boundary resolves as its query finishes. Slow cards don't hold up fast ones.
+
+## 2. A stat card component
+
+Each stat component `await`s its own query and returns a card:
+
+```tsx
+// src/app/demos/dashboard/stat-cards.tsx
+import { count, eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { tasks } from "@/lib/db/schema";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+export async function TotalTasksStat({ userId }: { userId: string }) {
+  const [{ value }] = await db
+    .select({ value: count() })
+    .from(tasks)
+    .where(eq(tasks.userId, userId));
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">Total tasks</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-3xl font-bold">{value}</p>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## 3. The skeleton fallback
+
+A skeleton that matches the card's dimensions prevents layout shift while the query runs:
+
+```tsx
+function StatSkeleton() {
+  return (
+    <div className="rounded-xl border p-6 space-y-3">
+      <Skeleton className="h-4 w-28" />
+      <Skeleton className="h-9 w-16" />
+    </div>
+  );
+}
+```
+
+## 4. Computing derived stats
+
+Completion rate is a `count` with a `where` filter divided by total — Drizzle keeps this readable:
+
+```ts
+export async function CompletionRateStat({ userId }: { userId: string }) {
+  const [total] = await db.select({ value: count() }).from(tasks).where(eq(tasks.userId, userId));
+  const [done] = await db
+    .select({ value: count() })
+    .from(tasks)
+    .where(and(eq(tasks.userId, userId), eq(tasks.completed, true)));
+
+  const rate = total.value === 0 ? 0 : Math.round((done.value / total.value) * 100);
+
+  return <StatCard label="Completion rate" value={`${rate}%`} />;
+}
+```
+
+## 5. Protect the page
+
+Redirect unauthenticated users and gate premium features before rendering any cards:
+
+```ts
+export default async function DashboardPage() {
+  const user = await getUser();
+  if (!user) redirect("/login?from=/demos/dashboard");
+
+  const isPremium = await getUserPremiumStatus();
+  if (!isPremium) return <PremiumPaywall />;
+
+  // render the grid…
+}
+```
+
+## 6. Deploy
+
+No extra configuration needed — RSC streaming works on Vercel out of the box. Push to GitHub, import at [vercel.com/new](https://vercel.com/new), add env vars, and deploy.
+
+Tip: simulate slow queries with `await new Promise(r => setTimeout(r, 2000))` inside a stat component to watch streaming in action.

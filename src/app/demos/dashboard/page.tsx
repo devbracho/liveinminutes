@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { PremiumPaywall } from "@/components/premium-paywall";
@@ -36,9 +37,15 @@ export default async function DashboardPage() {
     return (
       <main className="container mx-auto max-w-4xl px-4 py-16">
         <h1 className="text-2xl font-bold tracking-tight">Analytics Dashboard</h1>
-        <p className="mt-1 mb-6 text-sm text-muted-foreground">
+        <p className="mt-1 text-sm text-muted-foreground">
           RSC streaming from Postgres with Suspense boundaries.
         </p>
+        <Link
+          href="/guides/build-analytics-dashboard"
+          className="mt-3 mb-6 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
+        >
+          See how to get live in minutes →
+        </Link>
         <PremiumPaywall feature="demo" />
       </main>
     );
@@ -52,6 +59,12 @@ export default async function DashboardPage() {
         <code className="font-mono text-xs">{"<Suspense>"}</code> — they stream to the browser
         independently as each query completes.
       </p>
+      <Link
+        href="/guides/build-analytics-dashboard"
+        className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
+      >
+        See how to get live in minutes →
+      </Link>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Suspense fallback={<StatSkeleton />}>

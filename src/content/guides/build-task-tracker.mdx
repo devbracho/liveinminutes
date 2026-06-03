@@ -1,0 +1,146 @@
+---
+title: "Build a task tracker with Server Actions"
+description: "CRUD with Server Actions, Drizzle ORM, and optimistic UI — from scratch to deployed."
+category: "demos"
+order: 10
+---
+
+You will build a per-user task tracker where every create, toggle, and delete feels instant via optimistic UI, with Drizzle + Supabase handling persistence and RLS enforcing per-user isolation.
+
+## 1. Database schema
+
+Add a `tasks` table to your Drizzle schema:
+
+```ts
+// src/lib/db/schema.ts
+export const tasks = pgTable("tasks", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id").notNull(),
+  title: text("title").notNull(),
+  completed: boolean("completed").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+```
+
+Generate and run the migration:
+
+```bash
+pnpm drizzle-kit generate
+supabase db push
+```
+
+## 2. Row-level security
+
+Lock the table so users can only touch their own rows:
+
+```sql
+alter table tasks enable row level security;
+
+create policy "users own their tasks"
+on tasks for all
+using (user_id = auth.uid()::text)
+with check (user_id = auth.uid()::text);
+```
+
+## 3. Server Actions
+
+Three actions cover the whole CRUD surface. Each verifies the session before touching the database:
+
+```ts
+// src/app/demos/tasks/actions.ts
+"use server";
+
+import { and, eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { db } from "@/lib/db";
+import { tasks } from "@/lib/db/schema";
+import { getUser } from "@/lib/supabase/server";
+
+const titleSchema = z.string().min(1).max(200).trim();
+
+export async function createTask(formData: FormData) {
+  const user = await getUser();
+  if (!user) throw new Error("Unauthorized");
+  const title = titleSchema.parse(String(formData.get("title") ?? ""));
+  await db.insert(tasks).values({ userId: user.id, title });
+  revalidatePath("/demos/tasks");
+}
+
+export async function toggleTask(id: string) {
+  const user = await getUser();
+  if (!user) throw new Error("Unauthorized");
+  const [task] = await db
+    .select()
+    .from(tasks)
+    .where(and(eq(tasks.id, id), eq(tasks.userId, user.id)));
+  if (!task) return;
+  await db
+    .update(tasks)
+    .set({ completed: !task.completed, updatedAt: new Date() })
+    .where(and(eq(tasks.id, id), eq(tasks.userId, user.id)));
+  revalidatePath("/demos/tasks");
+}
+
+export async function deleteTask(id: string) {
+  const user = await getUser();
+  if (!user) throw new Error("Unauthorized");
+  await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, user.id)));
+  revalidatePath("/demos/tasks");
+}
+```
+
+## 4. Optimistic UI
+
+`useOptimistic` lets you update the list immediately while the Server Action is in flight. Pass a reducer that mirrors what the server will do:
+
+```ts
+const [optimisticTasks, dispatch] = useOptimistic(initialTasks, reducer);
+const [, startTransition] = useTransition();
+
+function handleAdd(formData: FormData) {
+  const title = String(formData.get("title") ?? "").trim();
+  const tempTask = { id: crypto.randomUUID(), title, completed: false, /* … */ };
+  startTransition(async () => {
+    dispatch({ type: "add", task: tempTask });
+    await createTask(formData);
+  });
+}
+```
+
+Wrap every mutation in `startTransition` so React knows it is a concurrent update.
+
+## 5. Page — load and protect
+
+Redirect to login if there is no session, then fetch tasks server-side:
+
+```ts
+// src/app/demos/tasks/page.tsx
+export default async function TasksPage() {
+  const user = await getUser();
+  if (!user) redirect("/login?from=/demos/tasks");
+
+  const userTasks = await db
+    .select()
+    .from(tasks)
+    .where(eq(tasks.userId, user.id))
+    .orderBy(asc(tasks.createdAt));
+
+  return (
+    <main className="container mx-auto max-w-2xl px-4 py-16">
+      <TaskList initialTasks={userTasks} />
+    </main>
+  );
+}
+```
+
+## 6. Deploy
+
+```bash
+gh repo create my-task-tracker --public --source=. --remote=origin --push
+```
+
+Import the repo at [vercel.com/new](https://vercel.com/new) and set your Supabase env vars (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `DATABASE_URL`). Click **Deploy**.
+
+Every push to `main` ships to production. Every PR gets its own preview URL with its own isolated Supabase branch.
