@@ -1,4 +1,4 @@
-import { boolean, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { boolean, integer, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const profiles = pgTable("profiles", {
   id: uuid().primaryKey(),
@@ -57,3 +57,27 @@ export const messages = pgTable("messages", {
 });
 
 export type Message = typeof messages.$inferSelect;
+
+export const timeEntries = pgTable("time_entries", {
+  id: uuid().primaryKey().defaultRandom(),
+  userId: uuid().notNull(),
+  clockIn: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  clockOut: timestamp({ withTimezone: true }),
+  note: text(),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+});
+
+export type TimeEntry = typeof timeEntries.$inferSelect;
+
+export const bookings = pgTable("bookings", {
+  id: uuid().primaryKey().defaultRandom(),
+  userId: uuid().notNull(),
+  name: text().notNull(),
+  startsAt: timestamp({ withTimezone: true }).notNull(),
+  durationMinutes: integer().notNull().default(30),
+  status: varchar({ length: 16 }).notNull().default("confirmed"),
+  note: text(),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Booking = typeof bookings.$inferSelect;
