@@ -1,9 +1,9 @@
 import { isAdminEmail } from "@/lib/auth/is-admin";
-import { type Role, ROLES } from "@/lib/auth/role-constants";
+import { ROLES, type Role } from "@/lib/auth/role-constants";
 import { createClient } from "@/lib/supabase/server";
 
-export { ROLES };
 export type { Role };
+export { ROLES };
 
 export type ProfileAccess = {
   role: Role;
