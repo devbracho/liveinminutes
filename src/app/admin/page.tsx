@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getAdminUsers } from "@/lib/auth/admin";
+import { getAdminUsers } from "@/lib/auth/admin-queries";
 import { isCurrentUserAdmin } from "@/lib/auth/roles";
 import { GrantPremiumForm } from "./grant-premium-form";
 import { SetRoleForm } from "./set-role-form";
