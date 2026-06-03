@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { DemoLinks } from "@/app/demos/_components/demo-links";
 import { InvoiceBuilder } from "./invoice-builder";
 
 export const metadata: Metadata = {
@@ -15,12 +15,7 @@ export default function InvoicePage() {
           Fill in the details, add line items, and print or save to PDF. Pure client-side React with
           URL-free local state. Nothing is stored on a server.
         </p>
-        <Link
-          href="/guides/build-invoice-generator"
-          className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
-        >
-          See how to get live in minutes →
-        </Link>
+        <DemoLinks guide="/guides/build-invoice-generator" skill="invoice" />
       </div>
       <InvoiceBuilder />
     </main>

@@ -1,7 +1,7 @@
 import { asc, eq } from "drizzle-orm";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { DemoLinks } from "@/app/demos/_components/demo-links";
 import { db } from "@/lib/db";
 import { bookings } from "@/lib/db/schema";
 import { getUser } from "@/lib/supabase/server";
@@ -28,12 +28,7 @@ export default async function BookingPage() {
         Schedule appointments, then confirm or cancel them. Server Actions + Drizzle + Zod
         validation + RLS so each account manages only its own bookings.
       </p>
-      <Link
-        href="/guides/build-appointment-booking"
-        className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
-      >
-        See how to get live in minutes →
-      </Link>
+      <DemoLinks guide="/guides/build-appointment-booking" skill="booking" />
       <BookingManager initialBookings={all} />
     </main>
   );

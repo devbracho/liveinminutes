@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { DemoLinks } from "@/app/demos/_components/demo-links";
 import { getUserPremiumStatus } from "@/lib/auth/premium";
 import { PRODUCTS } from "./products";
 import { StoreClient } from "./store-client";
@@ -23,12 +23,7 @@ export default async function StorePage({
       <p className="mt-1 text-sm text-muted-foreground">
         Cart stored in URL state. No login required. Premium items unlocked with a subscription.
       </p>
-      <Link
-        href="/guides/build-storefront"
-        className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
-      >
-        See how to get live in minutes →
-      </Link>
+      <DemoLinks guide="/guides/build-storefront" skill="store" />
       <StoreClient products={PRODUCTS} cartIds={cartIds} isPremium={isPremium} />
     </main>
   );

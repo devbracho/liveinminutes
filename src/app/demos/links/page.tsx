@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { DemoLinks } from "@/app/demos/_components/demo-links";
 import { LinkInBio } from "./link-in-bio";
 
 export const metadata: Metadata = {
@@ -14,12 +14,7 @@ export default function LinksPage() {
         Build a single page of links and generate a scannable QR code for it. Client-side React with
         a live preview. Point the QR at your deployed URL and share it anywhere.
       </p>
-      <Link
-        href="/guides/build-link-in-bio"
-        className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
-      >
-        See how to get live in minutes →
-      </Link>
+      <DemoLinks guide="/guides/build-link-in-bio" skill="links" />
       <LinkInBio />
     </main>
   );

@@ -1,7 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { DemoLinks } from "@/app/demos/_components/demo-links";
 import { db } from "@/lib/db";
 import { timeEntries } from "@/lib/db/schema";
 import { getUser } from "@/lib/supabase/server";
@@ -31,12 +31,7 @@ export default async function TimeClockPage() {
         Clock in at the start of your shift and clock out when you leave. Server Actions + Drizzle +
         RLS: each employee sees only their own entries.
       </p>
-      <Link
-        href="/guides/build-time-clock"
-        className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
-      >
-        See how to get live in minutes →
-      </Link>
+      <DemoLinks guide="/guides/build-time-clock" skill="timeclock" />
       <TimeClock initialEntries={entries} initialOpen={openEntry} />
     </main>
   );
