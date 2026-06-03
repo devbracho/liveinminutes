@@ -1,0 +1,119 @@
+---
+title: "Build a printable invoice generator"
+description: "Line-item invoices with live totals and print-to-PDF — pure client state, no backend."
+category: "demos"
+order: 16
+---
+
+You will build an invoice builder where users fill in client details, add line items, and print to PDF. Everything lives in React state — no database, no auth, no backend.
+
+## Why pure client state?
+
+Invoices are ephemeral documents. Users generate them on demand, download the PDF, and move on. There is nothing worth persisting server-side, which means zero infrastructure — just React and CSS.
+
+## 1. State shape
+
+A single `useState` object holds the entire invoice:
+
+```ts
+type LineItem = { id: string; description: string; qty: number; unitPrice: number };
+
+type Invoice = {
+  from: string;
+  to: string;
+  invoiceNumber: string;
+  date: string;
+  dueDate: string;
+  items: LineItem[];
+  notes: string;
+};
+
+const [invoice, setInvoice] = useState<Invoice>({
+  from: "",
+  to: "",
+  invoiceNumber: "INV-001",
+  date: new Date().toISOString().slice(0, 10),
+  dueDate: "",
+  items: [{ id: crypto.randomUUID(), description: "", qty: 1, unitPrice: 0 }],
+  notes: "",
+});
+```
+
+## 2. Live totals
+
+Derive totals from state — no extra state variables needed:
+
+```ts
+const subtotal = invoice.items.reduce((sum, item) => sum + item.qty * item.unitPrice, 0);
+const tax = subtotal * 0.1; // 10% — make configurable if needed
+const total = subtotal + tax;
+
+const fmt = (n: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
+```
+
+## 3. Add and remove line items
+
+```ts
+function addItem() {
+  setInvoice((prev) => ({
+    ...prev,
+    items: [...prev.items, { id: crypto.randomUUID(), description: "", qty: 1, unitPrice: 0 }],
+  }));
+}
+
+function removeItem(id: string) {
+  setInvoice((prev) => ({
+    ...prev,
+    items: prev.items.filter((item) => item.id !== id),
+  }));
+}
+
+function updateItem(id: string, field: keyof LineItem, value: string | number) {
+  setInvoice((prev) => ({
+    ...prev,
+    items: prev.items.map((item) =>
+      item.id === id ? { ...item, [field]: value } : item
+    ),
+  }));
+}
+```
+
+## 4. Print to PDF with CSS
+
+`window.print()` opens the system print dialog. Use `@media print` rules to hide the controls and show only the invoice:
+
+```css
+/* globals.css */
+@media print {
+  .print\:hidden { display: none !important; }
+  body { background: white; }
+  main { padding: 0; max-width: 100%; }
+}
+```
+
+Wrap the control panel in `className="print:hidden"`. The invoice section renders exactly as it looks on screen — browsers produce clean PDFs from it.
+
+```tsx
+<Button onClick={() => window.print()} className="print:hidden">
+  Print / Save PDF
+</Button>
+```
+
+## 5. Component structure
+
+```
+InvoiceBuilder (client)
+├── InvoiceForm      — editable fields (from, to, number, dates, notes)
+├── LineItemsTable   — rows with qty × price, add/remove buttons
+├── TotalsSummary    — subtotal, tax, total
+└── PrintButton      — triggers window.print()
+```
+
+## 6. Deploy
+
+```bash
+gh repo create my-invoice --public --source=. --remote=origin --push
+```
+
+Import at [vercel.com/new](https://vercel.com/new) and deploy with zero env vars. No database, no auth, no secrets — just a static Next.js app that ships immediately.

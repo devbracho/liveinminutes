@@ -1,5 +1,6 @@
 import { asc, eq } from "drizzle-orm";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { tasks } from "@/lib/db/schema";
@@ -27,6 +28,12 @@ export default async function TasksPage() {
         Server Actions + Drizzle CRUD + RLS. Each user sees only their own tasks. Optimistic UI via{" "}
         <code className="font-mono text-xs">useOptimistic</code>.
       </p>
+      <Link
+        href="/guides/build-task-tracker"
+        className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
+      >
+        See how to get live in minutes →
+      </Link>
       <TaskList initialTasks={userTasks} />
     </main>
   );

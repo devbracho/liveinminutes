@@ -1,0 +1,133 @@
+---
+title: "Build an appointment booking app"
+description: "Schedule and cancel appointments with Zod-validated Server Actions and per-user RLS."
+category: "demos"
+order: 15
+---
+
+You will build an appointment scheduler where users book time slots, and each booking is validated server-side, stored in Postgres, and protected by RLS. Cancellations update status without deleting rows.
+
+## 1. Database schema
+
+Store bookings with a status field so cancellations are tracked, not erased:
+
+```ts
+// src/lib/db/schema.ts
+export const bookings = pgTable("bookings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id").notNull(),
+  name: text("name").notNull(),
+  startsAt: timestamp("starts_at").notNull(),
+  durationMinutes: integer("duration_minutes").notNull().default(60),
+  note: text("note"),
+  status: text("status", { enum: ["confirmed", "cancelled"] })
+    .notNull()
+    .default("confirmed"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+```
+
+```bash
+pnpm drizzle-kit generate && supabase db push
+```
+
+## 2. Row-level security
+
+```sql
+alter table bookings enable row level security;
+
+create policy "users own their bookings"
+on bookings for all
+using (user_id = auth.uid()::text)
+with check (user_id = auth.uid()::text);
+```
+
+## 3. Zod validation in Server Actions
+
+Zod handles coercion and business rules together. The `refine` on `startsAt` rejects past dates:
+
+```ts
+"use server";
+
+const createSchema = z.object({
+  name: z.string().min(1, "Name is required.").max(120).trim(),
+  startsAt: z.coerce.date().refine(
+    (d) => d.getTime() > Date.now() - 60_000,
+    { message: "Pick a time in the future." }
+  ),
+  durationMinutes: z.coerce.number().int().min(15).max(480),
+  note: z.string().max(280).trim().optional(),
+});
+
+export async function createBooking(formData: FormData) {
+  const user = await getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const parsed = createSchema.parse({
+    name: formData.get("name"),
+    startsAt: formData.get("startsAt"),
+    durationMinutes: formData.get("durationMinutes"),
+    note: String(formData.get("note") ?? "") || undefined,
+  });
+
+  await db.insert(bookings).values({
+    userId: user.id,
+    ...parsed,
+    note: parsed.note ?? null,
+  });
+  revalidatePath("/demos/booking");
+}
+```
+
+## 4. Cancel without deleting
+
+Cancellations update status, keeping the audit trail:
+
+```ts
+export async function cancelBooking(id: string) {
+  const user = await getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  await db
+    .update(bookings)
+    .set({ status: "cancelled" })
+    .where(and(eq(bookings.id, id), eq(bookings.userId, user.id)));
+  revalidatePath("/demos/booking");
+}
+```
+
+## 5. Booking form
+
+Use a native `datetime-local` input — it renders a date+time picker with no dependencies:
+
+```tsx
+<form action={createBooking} className="space-y-4">
+  <Input name="name" placeholder="Appointment name" required />
+  <Input name="startsAt" type="datetime-local" required />
+  <select name="durationMinutes">
+    <option value="15">15 min</option>
+    <option value="30">30 min</option>
+    <option value="60" selected>1 hour</option>
+    <option value="120">2 hours</option>
+  </select>
+  <Textarea name="note" placeholder="Optional note" />
+  <Button type="submit">Book appointment</Button>
+</form>
+```
+
+## 6. Display upcoming vs past
+
+Sort and split bookings client-side (or with a DB query):
+
+```ts
+const upcoming = bookings.filter(
+  (b) => b.status === "confirmed" && new Date(b.startsAt) > new Date()
+);
+const past = bookings.filter(
+  (b) => b.status === "cancelled" || new Date(b.startsAt) <= new Date()
+);
+```
+
+## 7. Deploy
+
+Push to GitHub, import at [vercel.com/new](https://vercel.com/new), add Supabase env vars, and deploy. Zod validation runs on the server — clients cannot bypass it.

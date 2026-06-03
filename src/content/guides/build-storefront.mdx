@@ -1,0 +1,118 @@
+---
+title: "Build a storefront with URL cart state"
+description: "Product catalog + cart stored in the URL — no database, no session, fully shareable."
+category: "demos"
+order: 13
+---
+
+You will build a product storefront where the cart lives entirely in the URL (`?cart=id1,id2`). No database writes, no session management — just a shareable link that reconstructs the cart instantly.
+
+## Why URL state for the cart?
+
+- No backend round-trip to add/remove items
+- Cart survives a page refresh without any storage
+- Share your cart by copying the URL
+- Server Components can read it directly via `searchParams`
+
+## 1. Product catalog
+
+Keep products in a static file or seed them from a database. A typed constant is enough for a demo:
+
+```ts
+// src/app/demos/store/products.ts
+export type Product = {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+  premium?: boolean;
+};
+
+export const PRODUCTS: Product[] = [
+  { id: "p1", name: "Starter Kit", price: 29, image: "/products/starter.jpg" },
+  { id: "p2", name: "Pro Bundle", price: 79, image: "/products/pro.jpg", premium: true },
+  // …
+];
+```
+
+## 2. Read cart from searchParams on the server
+
+```tsx
+// src/app/demos/store/page.tsx
+export default async function StorePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ cart?: string }>;
+}) {
+  const { cart } = await searchParams;
+  const cartIds = cart ? cart.split(",").filter(Boolean) : [];
+  const isPremium = await getUserPremiumStatus();
+
+  return <StoreClient products={PRODUCTS} cartIds={cartIds} isPremium={isPremium} />;
+}
+```
+
+## 3. Manage cart in the client with `useRouter`
+
+```ts
+"use client";
+
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
+export function useCart(initial: string[]) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  function setCart(ids: string[]) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (ids.length) {
+      params.set("cart", ids.join(","));
+    } else {
+      params.delete("cart");
+    }
+    router.replace(`${pathname}?${params.toString()}`);
+  }
+
+  function add(id: string) {
+    setCart([...new Set([...initial, id])]);
+  }
+
+  function remove(id: string) {
+    setCart(initial.filter((i) => i !== id));
+  }
+
+  return { cartIds: initial, add, remove };
+}
+```
+
+## 4. Display cart total
+
+Cart total is a pure function — no state, no effects:
+
+```ts
+const cartItems = products.filter((p) => cartIds.includes(p.id));
+const total = cartItems.reduce((sum, p) => sum + p.price, 0);
+const formatted = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+}).format(total);
+```
+
+## 5. Gate premium products
+
+Pass `isPremium` from the server to the client. Blur or disable premium products for non-premium users:
+
+```tsx
+<div className={isPremium ? "" : "opacity-40 pointer-events-none"}>
+  <ProductCard product={product} />
+</div>
+```
+
+## 6. Deploy
+
+```bash
+gh repo create my-store --public --source=. --remote=origin --push
+```
+
+Import at [vercel.com/new](https://vercel.com/new) and deploy. Because cart state lives in the URL, the app works without any database — set zero env vars and ship immediately.

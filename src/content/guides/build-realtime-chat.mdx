@@ -1,0 +1,123 @@
+---
+title: "Build a realtime chat with Supabase"
+description: "Supabase Realtime channels + RLS: messages update live across all browser tabs."
+category: "demos"
+order: 11
+---
+
+You will build a multi-user chat room where every message appears instantly on every connected tab, without polling. Supabase Realtime broadcasts new rows over a WebSocket, and RLS keeps the data locked down.
+
+## 1. Database schema
+
+```ts
+// src/lib/db/schema.ts
+export const messages = pgTable("messages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id").notNull(),
+  username: text("username").notNull(),
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+```
+
+```bash
+pnpm drizzle-kit generate && supabase db push
+```
+
+## 2. Row-level security
+
+Allow any authenticated user to read all messages, but only write their own:
+
+```sql
+alter table messages enable row level security;
+
+create policy "authenticated users can read messages"
+on messages for select
+using (auth.role() = 'authenticated');
+
+create policy "users own their messages"
+on messages for insert
+with check (user_id = auth.uid()::text);
+```
+
+## 3. Enable Realtime for the table
+
+In the Supabase dashboard → **Database → Replication**, enable the `messages` table for realtime. Or via SQL:
+
+```sql
+alter publication supabase_realtime add table messages;
+```
+
+## 4. Subscribe to new messages in the client
+
+Create a Supabase browser client and subscribe to `INSERT` events on the channel:
+
+```ts
+"use client";
+
+import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState } from "react";
+
+export function ChatRoom({ initialMessages, userId, username }) {
+  const [messages, setMessages] = useState(initialMessages);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("chat")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => setMessages((prev) => [...prev, payload.new]),
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [supabase]);
+
+  // render messages…
+}
+```
+
+## 5. Send a message via Server Action
+
+```ts
+"use server";
+
+export async function sendMessage(formData: FormData) {
+  const user = await getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const body = z.string().min(1).max(500).trim().parse(
+    String(formData.get("body") ?? "")
+  );
+
+  await db.insert(messages).values({
+    userId: user.id,
+    username: user.email ?? "anon",
+    body,
+  });
+}
+```
+
+Realtime picks up the new row and broadcasts it — no `revalidatePath` needed here.
+
+## 6. Load the last 50 messages server-side
+
+Hydrate the component with recent history so new visitors don't see an empty room:
+
+```ts
+const initial = await db
+  .select()
+  .from(messages)
+  .orderBy(desc(messages.createdAt))
+  .limit(50);
+
+return <ChatRoom initialMessages={initial.reverse()} userId={user.id} username={user.email} />;
+```
+
+## 7. Deploy
+
+Add your Supabase env vars to Vercel and deploy. The Realtime WebSocket connection works on Vercel's Fluid Compute — no special configuration needed.
+
+Open two browser tabs and watch messages arrive in both simultaneously.

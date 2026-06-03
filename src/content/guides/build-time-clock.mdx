@@ -1,0 +1,128 @@
+---
+title: "Build an employee time clock"
+description: "Clock in/out with Server Actions and RLS — each employee sees only their own shifts."
+category: "demos"
+order: 14
+---
+
+You will build a time clock where employees clock in at the start of a shift and clock out when done. Server Actions handle the writes, Drizzle reads the entries, and RLS ensures each user sees only their own data.
+
+## 1. Database schema
+
+The key invariant: a user can only have one open entry at a time (no `clockOut` yet).
+
+```ts
+// src/lib/db/schema.ts
+export const timeEntries = pgTable("time_entries", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id").notNull(),
+  clockIn: timestamp("clock_in").defaultNow().notNull(),
+  clockOut: timestamp("clock_out"),
+  note: text("note"),
+});
+```
+
+```bash
+pnpm drizzle-kit generate && supabase db push
+```
+
+## 2. Row-level security
+
+```sql
+alter table time_entries enable row level security;
+
+create policy "users own their time entries"
+on time_entries for all
+using (user_id = auth.uid()::text)
+with check (user_id = auth.uid()::text);
+```
+
+## 3. Server Actions
+
+Clock-in checks for an existing open entry before inserting, preventing duplicate open shifts:
+
+```ts
+"use server";
+
+import { and, eq, isNull } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+import { db } from "@/lib/db";
+import { timeEntries } from "@/lib/db/schema";
+import { getUser } from "@/lib/supabase/server";
+
+async function getOpenEntry(userId: string) {
+  const [open] = await db
+    .select()
+    .from(timeEntries)
+    .where(and(eq(timeEntries.userId, userId), isNull(timeEntries.clockOut)))
+    .limit(1);
+  return open ?? null;
+}
+
+export async function clockIn(formData: FormData) {
+  const user = await getUser();
+  if (!user) throw new Error("Unauthorized");
+  const open = await getOpenEntry(user.id);
+  if (open) return; // already clocked in
+  const note = String(formData.get("note") ?? "") || null;
+  await db.insert(timeEntries).values({ userId: user.id, note });
+  revalidatePath("/demos/timeclock");
+}
+
+export async function clockOut() {
+  const user = await getUser();
+  if (!user) throw new Error("Unauthorized");
+  const open = await getOpenEntry(user.id);
+  if (!open) return;
+  await db
+    .update(timeEntries)
+    .set({ clockOut: new Date() })
+    .where(eq(timeEntries.id, open.id));
+  revalidatePath("/demos/timeclock");
+}
+```
+
+## 4. Live elapsed timer
+
+Display how long the current shift has been running with a client-side interval:
+
+```ts
+"use client";
+
+import { useEffect, useState } from "react";
+
+function useDuration(clockIn: Date | null) {
+  const [seconds, setSeconds] = useState(0);
+
+  useEffect(() => {
+    if (!clockIn) return;
+    const tick = () =>
+      setSeconds(Math.floor((Date.now() - clockIn.getTime()) / 1000));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [clockIn]);
+
+  const h = Math.floor(seconds / 3600).toString().padStart(2, "0");
+  const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, "0");
+  const s = (seconds % 60).toString().padStart(2, "0");
+  return `${h}:${m}:${s}`;
+}
+```
+
+## 5. Compute shift duration for history
+
+For completed entries, calculate duration server-side:
+
+```ts
+function formatDuration(start: Date, end: Date) {
+  const mins = Math.round((end.getTime() - start.getTime()) / 60_000);
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+```
+
+## 6. Deploy
+
+Push to GitHub, import at [vercel.com/new](https://vercel.com/new), add Supabase env vars, and deploy. The RLS policy guarantees isolation in production without any application-layer filtering.
