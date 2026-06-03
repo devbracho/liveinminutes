@@ -26,16 +26,14 @@ The agent instructions section is the most important. It specifies the dependenc
 
 ## How to use it: Claude Code
 
-Drop the file at your project root as `CLAUDE.md`. The `skill.md` files live in the source repo, not the deployed site — use the GitHub raw URL:
+Drop the file at your project root as `CLAUDE.md`. Each demo's skill file is served directly from this site:
 
 ```bash
-# Download from GitHub (replace "tasks" with any demo name)
-curl -o CLAUDE.md \
-  https://raw.githubusercontent.com/devbracho/liveinminutes/main/src/app/demos/tasks/skill.md
-
-# Or copy from a local clone
-cp path/to/demos/tasks/skill.md ./CLAUDE.md
+# Download (replace "tasks" with any demo name — see the table at the bottom)
+curl https://liveinminutes.vercel.app/skills/tasks.md -o CLAUDE.md
 ```
+
+The `-o CLAUDE.md` at the end is essential — it saves the downloaded file as `CLAUDE.md` in your current directory. Without it, curl writes to stdout instead.
 
 Claude Code reads `CLAUDE.md` automatically on every message. You can then prompt conversationally:
 
@@ -104,21 +102,19 @@ The AI will reconcile the two schemas and build a unified app without you having
 
 ## Where to find the skill.md files
 
-Each demo page links to its guide, and each demo directory in the GitHub repo contains the spec. Use the raw GitHub URLs to download them:
+Each demo page has a **Download as CLAUDE.md** button. Or use `curl` with the URL pattern below:
 
 ```
-https://raw.githubusercontent.com/devbracho/liveinminutes/main/src/app/demos/<name>/skill.md
+https://liveinminutes.vercel.app/skills/<name>.md
 ```
 
-| Demo | `<name>` |
+| Demo | curl command |
 |---|---|
-| Task tracker | `tasks` |
-| Realtime chat | `chat` |
-| Analytics dashboard | `dashboard` |
-| Storefront | `store` |
-| Time clock | `timeclock` |
-| Appointment booking | `booking` |
-| Invoice generator | `invoice` |
-| Link-in-bio + QR | `links` |
-
-Clone the repo and copy any skill.md to your project — or read the guide on this site for the code patterns written out in full.
+| Task tracker | `curl https://liveinminutes.vercel.app/skills/tasks.md -o CLAUDE.md` |
+| Realtime chat | `curl https://liveinminutes.vercel.app/skills/chat.md -o CLAUDE.md` |
+| Analytics dashboard | `curl https://liveinminutes.vercel.app/skills/dashboard.md -o CLAUDE.md` |
+| Storefront | `curl https://liveinminutes.vercel.app/skills/store.md -o CLAUDE.md` |
+| Time clock | `curl https://liveinminutes.vercel.app/skills/timeclock.md -o CLAUDE.md` |
+| Appointment booking | `curl https://liveinminutes.vercel.app/skills/booking.md -o CLAUDE.md` |
+| Invoice generator | `curl https://liveinminutes.vercel.app/skills/invoice.md -o CLAUDE.md` |
+| Link-in-bio + QR | `curl https://liveinminutes.vercel.app/skills/links.md -o CLAUDE.md` |

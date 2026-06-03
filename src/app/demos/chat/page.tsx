@@ -1,7 +1,7 @@
 import { desc } from "drizzle-orm";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { DemoLinks } from "@/app/demos/_components/demo-links";
 import { PremiumPaywall } from "@/components/premium-paywall";
 import { getUserPremiumStatus } from "@/lib/auth/premium";
 import { db } from "@/lib/db";
@@ -26,13 +26,10 @@ export default async function ChatPage() {
         <p className="mt-1 text-sm text-muted-foreground">
           Supabase Realtime channels + RLS. Messages update live across all tabs.
         </p>
-        <Link
-          href="/guides/build-realtime-chat"
-          className="mt-3 mb-6 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
-        >
-          See how to get live in minutes →
-        </Link>
-        <PremiumPaywall feature="demo" />
+        <DemoLinks guide="/guides/build-realtime-chat" skill="chat" />
+        <div className="mt-6">
+          <PremiumPaywall feature="demo" />
+        </div>
       </main>
     );
   }
@@ -45,12 +42,7 @@ export default async function ChatPage() {
       <p className="mt-1 text-sm text-muted-foreground">
         Supabase Realtime channels + RLS. Messages update live across all tabs.
       </p>
-      <Link
-        href="/guides/build-realtime-chat"
-        className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
-      >
-        See how to get live in minutes →
-      </Link>
+      <DemoLinks guide="/guides/build-realtime-chat" skill="chat" />
       <ChatRoom
         initialMessages={initial.reverse()}
         userId={user.id}

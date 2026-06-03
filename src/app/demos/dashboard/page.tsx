@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { DemoLinks } from "@/app/demos/_components/demo-links";
 import { PremiumPaywall } from "@/components/premium-paywall";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getUserPremiumStatus } from "@/lib/auth/premium";
@@ -40,13 +40,10 @@ export default async function DashboardPage() {
         <p className="mt-1 text-sm text-muted-foreground">
           RSC streaming from Postgres with Suspense boundaries.
         </p>
-        <Link
-          href="/guides/build-analytics-dashboard"
-          className="mt-3 mb-6 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
-        >
-          See how to get live in minutes →
-        </Link>
-        <PremiumPaywall feature="demo" />
+        <DemoLinks guide="/guides/build-analytics-dashboard" skill="dashboard" />
+        <div className="mt-6">
+          <PremiumPaywall feature="demo" />
+        </div>
       </main>
     );
   }
@@ -59,12 +56,7 @@ export default async function DashboardPage() {
         <code className="font-mono text-xs">{"<Suspense>"}</code> — they stream to the browser
         independently as each query completes.
       </p>
-      <Link
-        href="/guides/build-analytics-dashboard"
-        className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
-      >
-        See how to get live in minutes →
-      </Link>
+      <DemoLinks guide="/guides/build-analytics-dashboard" skill="dashboard" />
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Suspense fallback={<StatSkeleton />}>
