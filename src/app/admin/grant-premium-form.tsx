@@ -5,7 +5,8 @@ import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { type AdminActionState, grantPremium } from "@/lib/auth/admin";
+import { grantPremium } from "@/lib/auth/admin";
+import type { AdminActionState } from "@/lib/auth/admin-types";
 
 const initialState: AdminActionState = {};
 
