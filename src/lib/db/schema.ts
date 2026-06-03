@@ -3,6 +3,7 @@ import { boolean, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg
 export const profiles = pgTable("profiles", {
   id: uuid().primaryKey(),
   email: text(),
+  role: varchar({ length: 16 }).notNull().default("user"),
   isPremium: boolean().notNull().default(false),
   premiumSince: timestamp({ withTimezone: true }),
   premiumExpiresAt: timestamp({ withTimezone: true }),
