@@ -5,8 +5,8 @@ import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { type AdminActionState } from "@/lib/auth/admin-types";
 import { setUserRole } from "@/lib/auth/admin";
+import type { AdminActionState } from "@/lib/auth/admin-types";
 import { ROLES } from "@/lib/auth/role-constants";
 
 const initialState: AdminActionState = {};

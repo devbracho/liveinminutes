@@ -3,9 +3,9 @@
 import { useActionState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { type AdminActionState, type AdminUser } from "@/lib/auth/admin-types";
-import { ROLES } from "@/lib/auth/role-constants";
 import { setPremiumById, setUserBannedById, setUserRoleById } from "@/lib/auth/admin";
+import type { AdminActionState, AdminUser } from "@/lib/auth/admin-types";
+import { ROLES } from "@/lib/auth/role-constants";
 
 const initialState: AdminActionState = {};
 
