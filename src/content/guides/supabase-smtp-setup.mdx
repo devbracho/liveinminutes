@@ -7,121 +7,85 @@ order: 1
 
 Supabase ships with a shared SMTP service for development. It caps out at **2–3 OTP emails per hour** across your entire project. Any real traffic hits this limit immediately — users see *"email rate limit exceeded"* and can't sign in.
 
-The fix is to connect your own email provider. [Resend](https://resend.com) is the fastest option: free up to 3,000 emails/month, and Supabase has a native marketplace integration for it.
+The fix is to connect your own email provider. [Resend](https://resend.com) is the fastest option: free up to 3,000 emails/month, takes about 3 minutes to set up.
 
-## Option A — Resend Marketplace integration (recommended)
+## 1. Fix the Site URL first
 
-This is one click and requires no manual SMTP config.
+Before touching SMTP, make sure your Supabase Site URL is set to your production domain. Supabase uses it as the base URL when building magic link emails — if it still says `http://localhost:3000`, every email sent to real users links back to your laptop.
 
-### 1. Install the integration
+1. Go to **Authentication → URL Configuration**.
+2. Set **Site URL** to your production URL: `https://yourapp.vercel.app`
+3. Click **Save changes**.
 
-1. Open your Supabase project dashboard.
-2. Go to **Integrations** (left sidebar) → search for **Resend**.
-3. Click **Connect** → follow the OAuth flow to authorize Resend.
-4. Supabase automatically sets the SMTP credentials. Done.
+## 2. Set up redirect URLs
 
-### 2. Verify it works
-
-Send a magic link from your app. Check the **Resend dashboard → Emails** tab — you should see a delivery record within seconds.
-
----
-
-## Option B — Manual SMTP (Resend, SendGrid, Postmark, etc.)
-
-Use this if you want to use a different provider or need more control.
-
-### 1. Get SMTP credentials from your provider
-
-**Resend:**
-1. Create an account at [resend.com](https://resend.com).
-2. Go to **API Keys** → Create a key with "Sending access".
-3. Your SMTP credentials are:
-   - Host: `smtp.resend.com`
-   - Port: `465` (SSL) or `587` (TLS)
-   - Username: `resend`
-   - Password: your API key
-
-**SendGrid:**
-1. Create an account at [sendgrid.com](https://sendgrid.com).
-2. Go to **Settings → API Keys** → Create a key with "Mail Send" permission.
-3. SMTP credentials:
-   - Host: `smtp.sendgrid.net`
-   - Port: `587`
-   - Username: `apikey`
-   - Password: your API key
-
-### 2. Add SMTP settings in Supabase
-
-1. Open your Supabase project dashboard.
-2. Go to **Project Settings** (gear icon) → **Auth**.
-3. Scroll to **SMTP Settings**.
-4. Toggle **Enable Custom SMTP** on.
-5. Fill in:
-   - **Sender name**: e.g. `LiveInMinutes`
-   - **Sender email**: e.g. `no-reply@yourdomain.com` (must be verified with your provider)
-   - **Host**, **Port**, **Username**, **Password**: from step 1.
-6. Click **Save**.
-
-### 3. Verify your sender domain (required)
-
-Your email provider requires that the sender domain (`yourdomain.com`) is verified via DNS records. Follow the provider's verification guide — it usually takes 5–10 minutes to propagate.
-
-If you skip this, emails will bounce or land in spam.
-
-### 4. Test the connection
-
-Still in **SMTP Settings**, click **Test SMTP connection**. Supabase sends a test message. Check your inbox.
-
----
-
-## Update redirect URLs (both environments)
-
-Magic links redirect to your app's `/auth/callback` URL. Supabase rejects redirects to domains it doesn't recognize.
-
-### Site URL
-
-Set **Site URL** to your production domain — this is the base URL Supabase uses when building magic link emails. If it is still `http://localhost:3000`, every magic link sent to real users will point at your laptop.
-
-```
-https://yourdomain.vercel.app
-```
-
-Click **Save changes**.
-
-### Redirect URLs
-
-These are the specific URLs Supabase is allowed to redirect to after auth. Add one per environment:
+Supabase only redirects to URLs you explicitly allow. Add one per environment:
 
 | Environment | URL |
 |---|---|
 | Local dev | `http://localhost:3000/auth/callback` |
 | Vercel previews | `https://*.vercel.app/auth/callback` |
-| Production | `https://yourdomain.vercel.app/auth/callback` |
+| Production | `https://yourapp.vercel.app/auth/callback` |
 
-Use the exact `/auth/callback` path — not a wildcard `/**`. It is more secure and matches the `emailRedirectTo` value the app sends.
+Use the exact `/auth/callback` path — not a wildcard `/**`.
 
----
+## 3. Connect Resend as your SMTP provider
 
-## Set NEXT_PUBLIC_SITE_URL in Vercel
+### Get your Resend credentials
 
-The `emailRedirectTo` URL is built from `NEXT_PUBLIC_SITE_URL`. Make sure it points to your production domain — not `localhost`.
+1. Create an account at [resend.com](https://resend.com).
+2. Go to **API Keys** → **Create API key** → Full access → copy the key (starts with `re_`).
 
-```bash
-vercel env add NEXT_PUBLIC_SITE_URL production
-# enter: https://yourdomain.com
-```
+### Quick start: use Resend's shared domain
 
-Or set it in the Vercel dashboard: **Project → Settings → Environment Variables**.
+If you don't have a custom domain yet, Resend lets you send from `onboarding@resend.dev` for testing. Use that as your sender email to unblock yourself immediately, then swap it for your real domain later.
 
----
+### Add SMTP in Supabase
 
-## Check current Supabase rate limits
+1. Open your Supabase project → **Project Settings → Auth**.
+2. Scroll to **SMTP Provider** → toggle **Enable Custom SMTP**.
+3. Fill in:
 
-| Tier | OTP emails / hour |
+| Field | Value |
 |---|---|
-| Free (default SMTP) | 2–3 |
-| Resend free | 100/day (3,000/month) |
-| Resend Pro | unlimited |
-| SendGrid Essentials | 100/day |
+| Host | `smtp.resend.com` |
+| Port | `465` |
+| Username | `resend` |
+| Password | your `re_...` API key |
+| Sender email | `onboarding@resend.dev` *(or your verified domain)* |
+| Sender name | `LiveInMinutes` |
 
-Once custom SMTP is connected, the rate limit is governed by your provider — not Supabase.
+4. Click **Save** → then **Test SMTP connection**.
+
+If the test passes, magic links now go through Resend.
+
+## 4. Verify your sender domain (for production)
+
+The `resend.dev` shared domain works for testing but emails come from Resend's brand. For production, verify your own domain:
+
+1. In the Resend dashboard → **Domains** → **Add domain** → enter `yourdomain.com`.
+2. Add the DNS records Resend shows you (usually SPF, DKIM, and DMARC).
+3. Wait 5–10 minutes for propagation → click **Verify**.
+4. Update the **Sender email** in Supabase to `noreply@yourdomain.com`.
+
+## 5. Set NEXT_PUBLIC_SITE_URL in Vercel
+
+The `emailRedirectTo` URL in the app is built from `NEXT_PUBLIC_SITE_URL`. Make sure it matches your production domain in Vercel:
+
+**Vercel dashboard → Project → Settings → Environment Variables**
+
+| Variable | Production value |
+|---|---|
+| `NEXT_PUBLIC_SITE_URL` | `https://yourapp.vercel.app` |
+
+---
+
+## Rate limits at a glance
+
+| Tier | Limit |
+|---|---|
+| Supabase default SMTP | 2–3 emails / hour |
+| Resend free | 3,000 emails / month |
+| Resend Pro | 50,000+ / month |
+
+Once custom SMTP is connected, the limit is set by your provider — not Supabase.
