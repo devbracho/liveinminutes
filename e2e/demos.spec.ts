@@ -7,8 +7,16 @@ test.describe("Demos index", () => {
     await page.goto("/demos");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("See the stack in action");
 
-    const cards = ["Task tracker", "Realtime chat", "Analytics dashboard", "Storefront",
-      "Employee time clock", "Appointment booking", "Invoice generator", "Link-in-bio + QR"];
+    const cards = [
+      "Task tracker",
+      "Realtime chat",
+      "Analytics dashboard",
+      "Storefront",
+      "Employee time clock",
+      "Appointment booking",
+      "Invoice generator",
+      "Link-in-bio + QR",
+    ];
 
     for (const title of cards) {
       await expect(page.getByText(title)).toBeVisible();
@@ -24,8 +32,14 @@ test.describe("Demos index", () => {
   test("demo cards link to the correct routes", async ({ page }) => {
     await page.goto("/demos");
     const demoLinks = [
-      "/demos/tasks", "/demos/chat", "/demos/dashboard", "/demos/store",
-      "/demos/timeclock", "/demos/booking", "/demos/invoice", "/demos/links",
+      "/demos/tasks",
+      "/demos/chat",
+      "/demos/dashboard",
+      "/demos/store",
+      "/demos/timeclock",
+      "/demos/booking",
+      "/demos/invoice",
+      "/demos/links",
     ];
     for (const href of demoLinks) {
       await expect(page.locator(`a[href="${href}"]`).first()).toBeVisible();
@@ -36,11 +50,11 @@ test.describe("Demos index", () => {
 // ── Auth-gated demos: must redirect to /login ─────────────────────────────────
 
 const authGatedDemos = [
-  { name: "Task tracker",          path: "/demos/tasks" },
-  { name: "Realtime chat",         path: "/demos/chat" },
-  { name: "Analytics dashboard",   path: "/demos/dashboard" },
-  { name: "Employee time clock",   path: "/demos/timeclock" },
-  { name: "Appointment booking",   path: "/demos/booking" },
+  { name: "Task tracker", path: "/demos/tasks" },
+  { name: "Realtime chat", path: "/demos/chat" },
+  { name: "Analytics dashboard", path: "/demos/dashboard" },
+  { name: "Employee time clock", path: "/demos/timeclock" },
+  { name: "Appointment booking", path: "/demos/booking" },
 ];
 
 for (const { name, path } of authGatedDemos) {
@@ -96,9 +110,9 @@ test.describe("Link-in-bio demo", () => {
 
 test.describe("Demo → guide navigation", () => {
   const demoGuides: [string, string][] = [
-    ["/demos/store",   "/guides/build-storefront"],
+    ["/demos/store", "/guides/build-storefront"],
     ["/demos/invoice", "/guides/build-invoice-generator"],
-    ["/demos/links",   "/guides/build-link-in-bio"],
+    ["/demos/links", "/guides/build-link-in-bio"],
   ];
 
   for (const [demoPath, guidePath] of demoGuides) {
