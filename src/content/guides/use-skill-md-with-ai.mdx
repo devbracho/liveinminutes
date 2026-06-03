@@ -26,13 +26,14 @@ The agent instructions section is the most important. It specifies the dependenc
 
 ## How to use it: Claude Code
 
-Drop the file at your project root as `CLAUDE.md`:
+Drop the file at your project root as `CLAUDE.md`. The `skill.md` files live in the source repo, not the deployed site — use the GitHub raw URL:
 
 ```bash
-# In your project directory
-curl -o CLAUDE.md https://liveinminutes.vercel.app/demos/tasks/skill.md
+# Download from GitHub (replace "tasks" with any demo name)
+curl -o CLAUDE.md \
+  https://raw.githubusercontent.com/devbracho/liveinminutes/main/src/app/demos/tasks/skill.md
 
-# Or copy it from a cloned repo
+# Or copy from a local clone
 cp path/to/demos/tasks/skill.md ./CLAUDE.md
 ```
 
@@ -103,17 +104,21 @@ The AI will reconcile the two schemas and build a unified app without you having
 
 ## Where to find the skill.md files
 
-Each demo page links to its guide, and each demo directory contains the spec:
+Each demo page links to its guide, and each demo directory in the GitHub repo contains the spec. Use the raw GitHub URLs to download them:
 
-| Demo | skill.md location |
+```
+https://raw.githubusercontent.com/devbracho/liveinminutes/main/src/app/demos/<name>/skill.md
+```
+
+| Demo | `<name>` |
 |---|---|
-| Task tracker | `src/app/demos/tasks/skill.md` |
-| Realtime chat | `src/app/demos/chat/skill.md` |
-| Analytics dashboard | `src/app/demos/dashboard/skill.md` |
-| Storefront | `src/app/demos/store/skill.md` |
-| Time clock | `src/app/demos/timeclock/skill.md` |
-| Appointment booking | `src/app/demos/booking/skill.md` |
-| Invoice generator | `src/app/demos/invoice/skill.md` |
-| Link-in-bio + QR | `src/app/demos/links/skill.md` |
+| Task tracker | `tasks` |
+| Realtime chat | `chat` |
+| Analytics dashboard | `dashboard` |
+| Storefront | `store` |
+| Time clock | `timeclock` |
+| Appointment booking | `booking` |
+| Invoice generator | `invoice` |
+| Link-in-bio + QR | `links` |
 
 Clone the repo and copy any skill.md to your project — or read the guide on this site for the code patterns written out in full.
