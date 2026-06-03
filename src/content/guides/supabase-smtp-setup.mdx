@@ -78,16 +78,27 @@ Still in **SMTP Settings**, click **Test SMTP connection**. Supabase sends a tes
 
 Magic links redirect to your app's `/auth/callback` URL. Supabase rejects redirects to domains it doesn't recognize.
 
-### Development
+### Site URL
 
-1. Go to **Authentication → URL Configuration**.
-2. Add `http://localhost:3000/**` to **Redirect URLs**.
+Set **Site URL** to your production domain — this is the base URL Supabase uses when building magic link emails. If it is still `http://localhost:3000`, every magic link sent to real users will point at your laptop.
 
-### Production
+```
+https://yourdomain.vercel.app
+```
 
-1. Add your production domain: `https://yourdomain.com/**`
-2. If you use Vercel preview deployments, also add the wildcard:
-   `https://*-your-project.vercel.app/**`
+Click **Save changes**.
+
+### Redirect URLs
+
+These are the specific URLs Supabase is allowed to redirect to after auth. Add one per environment:
+
+| Environment | URL |
+|---|---|
+| Local dev | `http://localhost:3000/auth/callback` |
+| Vercel previews | `https://*.vercel.app/auth/callback` |
+| Production | `https://yourdomain.vercel.app/auth/callback` |
+
+Use the exact `/auth/callback` path — not a wildcard `/**`. It is more secure and matches the `emailRedirectTo` value the app sends.
 
 ---
 
