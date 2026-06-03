@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Admin" };
 export default async function AdminPage() {
   if (!(await isCurrentUserAdmin())) redirect("/");
 
-  const users = await getAdminUsers();
+  const { users, error } = await getAdminUsers();
 
   return (
     <main className="container mx-auto max-w-5xl px-4 py-16">
@@ -22,6 +22,11 @@ export default async function AdminPage() {
 
       {/* ── User table ── */}
       <section className="mt-8">
+        {error && (
+          <div className="mb-4 rounded-md border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+            <strong>Could not load users:</strong> {error}
+          </div>
+        )}
         <div className="rounded-lg border border-border overflow-hidden">
           <table className="w-full text-sm">
             <thead>
@@ -47,7 +52,7 @@ export default async function AdminPage() {
               {users.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
-                    No users yet.
+                    {error ? "Fix the error above to see users." : "No users yet."}
                   </td>
                 </tr>
               ) : (

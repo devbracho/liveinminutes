@@ -7,8 +7,12 @@ function normalizeRole(value: unknown): Role {
   return value === "premium" || value === "admin" ? value : "user";
 }
 
-export async function getAdminUsers(): Promise<AdminUser[]> {
-  if (!(await isCurrentUserAdmin())) return [];
+export async function getAdminUsers(): Promise<{ users: AdminUser[]; error?: string }> {
+  if (!(await isCurrentUserAdmin())) return { users: [] };
+
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return { users: [], error: "SUPABASE_SERVICE_ROLE_KEY is not set in environment variables." };
+  }
 
   const supabaseAdmin = createAdminClient();
 
@@ -17,7 +21,7 @@ export async function getAdminUsers(): Promise<AdminUser[]> {
     supabaseAdmin.from("profiles").select("id, role, is_premium, premium_expires_at"),
   ]);
 
-  if (authError) throw new Error(authError.message);
+  if (authError) return { users: [], error: authError.message };
 
   const profileMap = new Map(
     (profiles ?? []).map((p) => [
@@ -31,7 +35,7 @@ export async function getAdminUsers(): Promise<AdminUser[]> {
     ]),
   );
 
-  return (authData?.users ?? []).map((u) => {
+  const users = (authData?.users ?? []).map((u) => {
     const p = profileMap.get(u.id);
     return {
       id: u.id,
@@ -42,4 +46,6 @@ export async function getAdminUsers(): Promise<AdminUser[]> {
       isPremium: p?.isPremium ?? false,
     };
   });
+
+  return { users };
 }
