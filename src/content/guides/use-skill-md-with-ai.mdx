@@ -1,0 +1,119 @@
+---
+title: "Use skill.md files to brief your AI agent"
+description: "Each demo has a machine-readable spec. Drop it in your project and your AI agent knows exactly what to build."
+category: "ai"
+order: 2
+---
+
+Every demo app on this site ships with a `skill.md` file — a machine-readable spec that tells an AI coding agent (Claude, Cursor, Copilot) exactly what to build, in what order, with which patterns.
+
+This guide shows you how to use them.
+
+## What a skill.md contains
+
+Each `skill.md` has six sections:
+
+| Section | What it gives the AI |
+|---|---|
+| **What to build** | The feature description in one paragraph |
+| **Stack** | Exact packages and patterns to use |
+| **Database schema** | Copy-pasteable SQL with RLS policies |
+| **File structure** | Which files to create, what each does |
+| **Key patterns** | The non-obvious code the AI would get wrong |
+| **Agent instructions** | Numbered steps in the right order |
+
+The agent instructions section is the most important. It specifies the dependency order so the AI builds files in the sequence that compiles: schema → server actions → client component → page.
+
+## How to use it: Claude Code
+
+Drop the file at your project root as `CLAUDE.md`:
+
+```bash
+# In your project directory
+curl -o CLAUDE.md https://liveinminutes.vercel.app/demos/tasks/skill.md
+
+# Or copy it from a cloned repo
+cp path/to/demos/tasks/skill.md ./CLAUDE.md
+```
+
+Claude Code reads `CLAUDE.md` automatically on every message. You can then prompt conversationally:
+
+```text
+Build the task tracker following the spec.
+Start with the database schema, then the actions, then the client component.
+```
+
+Claude will follow the numbered agent instructions without you having to repeat the stack or constraints.
+
+## How to use it: Cursor
+
+Paste the `skill.md` content into Cursor's **Rules for AI** (`.cursorrules`) or as a system prompt in Cursor Chat:
+
+1. Open Cursor → **Settings → Rules for AI**
+2. Paste the full `skill.md` content
+3. Start a new chat and prompt:
+
+```text
+Implement the task tracker from the spec in Rules for AI.
+Begin with step 1 (database schema).
+```
+
+## How to use it: GitHub Copilot Chat
+
+Paste it directly into the Copilot Chat window as context:
+
+```text
+Here is the spec for what I'm building:
+
+[paste skill.md content]
+
+Start with the database schema from step 1 of the agent instructions.
+```
+
+## Modify the spec before you use it
+
+The skill.md files match the demo exactly. Before using one, adjust:
+
+- **Table names** — rename `tasks` to `todos`, `bookings` to `appointments`, etc.
+- **Fields** — add or remove columns to match your domain
+- **Auth** — remove the auth sections if your app doesn't need login
+- **Stack versions** — the spec targets this site's stack; update if yours differs
+
+Edit the file in your editor, then drop the modified version as `CLAUDE.md`.
+
+## Combine skill.md files for more complex apps
+
+You can merge two specs to build a combined app. Example — a task tracker with a time log:
+
+```text
+I'm building a combined task tracker + time logger.
+
+From skill.md for tasks:
+[paste the Key patterns section]
+
+From skill.md for timeclock:
+[paste the Key patterns section]
+
+Build the shared database schema first. The tasks table and time_entries table
+should both use user_id for RLS isolation. Then build separate Server Action
+files for each feature.
+```
+
+The AI will reconcile the two schemas and build a unified app without you having to spell out all the patterns from scratch.
+
+## Where to find the skill.md files
+
+Each demo page links to its guide, and each demo directory contains the spec:
+
+| Demo | skill.md location |
+|---|---|
+| Task tracker | `src/app/demos/tasks/skill.md` |
+| Realtime chat | `src/app/demos/chat/skill.md` |
+| Analytics dashboard | `src/app/demos/dashboard/skill.md` |
+| Storefront | `src/app/demos/store/skill.md` |
+| Time clock | `src/app/demos/timeclock/skill.md` |
+| Appointment booking | `src/app/demos/booking/skill.md` |
+| Invoice generator | `src/app/demos/invoice/skill.md` |
+| Link-in-bio + QR | `src/app/demos/links/skill.md` |
+
+Clone the repo and copy any skill.md to your project — or read the guide on this site for the code patterns written out in full.
