@@ -1,0 +1,139 @@
+---
+title: "How to prompt AI to build your app"
+description: "The prompting patterns that get real, working code from Claude, Cursor, and Copilot — not just a skeleton."
+category: "ai"
+order: 1
+---
+
+Most people get mediocre output from AI coding tools not because the model is bad, but because the prompt gives it nothing to work with. A vague prompt produces vague code. A specific prompt with context, constraints, and a clear scope produces production-ready files.
+
+This guide covers the exact patterns that work for building the kinds of apps on this site.
+
+## Start with a CLAUDE.md (or system prompt)
+
+Before you write a single instruction, give the AI a spec. Every demo on this site has a `skill.md` file in its directory. Copy it to your project root as `CLAUDE.md`:
+
+```bash
+# If you cloned a demo:
+cp src/app/demos/tasks/skill.md CLAUDE.md
+
+# Or download from the guide page and drop it in your project root
+```
+
+Claude Code reads `CLAUDE.md` automatically on every prompt. Cursor and Copilot read it if you paste it in as a system prompt or workspace instruction. This single step eliminates the most common failure mode: the AI not knowing your stack.
+
+## The anatomy of a good first prompt
+
+A good opening prompt has four parts:
+
+```text
+[What to build] A per-user task tracker.
+
+[Stack] Next.js 16 App Router, Supabase, Drizzle ORM, Zod, TypeScript.
+No client-side data fetching libraries — use Server Components and Server Actions.
+
+[Constraints] RLS must be enabled so users only see their own rows.
+Validate all inputs server-side with Zod before touching the database.
+No useEffect for data fetching.
+
+[Starting point] Create the Drizzle schema first, then the Server Actions,
+then the page component.
+```
+
+The stack and constraints block is the most valuable part. Without it, the AI will default to whatever it saw most in training — which might be React Query, Prisma, and Pages Router.
+
+## Give context, not instructions
+
+The difference between a 10-line response and a 200-line working file:
+
+| Weak prompt | Strong prompt |
+|---|---|
+| "Add a task form" | "Add a Server Action `createTask` that validates input with Zod, inserts into the `tasks` table via Drizzle, and calls `revalidatePath('/tasks')`. The user must be authenticated — throw if `getUser()` returns null." |
+| "Make it realtime" | "Add a Supabase Realtime subscription in the client component that listens for `INSERT` events on the `messages` table and appends them to local state. Clean up with `removeChannel` in the useEffect return." |
+| "Add auth" | "Add a redirect to `/login?from=/demos/tasks` if `getUser()` returns null. Do this in the Server Component page, not in middleware." |
+
+## One thing at a time
+
+The most reliable pattern: one concern per prompt, in dependency order.
+
+```text
+1. "Create the database schema for appointments"
+2. "Create the Zod validation schemas for createBooking and cancelBooking"
+3. "Create the Server Actions using those schemas"
+4. "Create the booking form client component that calls createBooking"
+5. "Create the page.tsx that fetches bookings and renders the form"
+```
+
+Asking for all five at once produces code where the imports reference things that don't exist yet. Building in order means each step compiles.
+
+## How to iterate on a failing response
+
+When the AI gives you wrong code, don't start over. Paste the error and tell it exactly what's wrong:
+
+```text
+This errors with: "Type 'string' is not assignable to type 'Role'"
+
+The `role` column returns `varchar` from Drizzle which TypeScript widens to
+`string`, but `Role` is `"user" | "premium" | "admin"`. Add a `normalizeRole`
+function that casts the string to Role using a type guard, and use it when
+reading from the database.
+```
+
+Giving the TypeScript error + the cause + the fix approach gets a precise, working response. "It doesn't work, fix it" does not.
+
+## Tell it what NOT to do
+
+Negative constraints are as important as positive ones:
+
+```text
+Do NOT use useEffect for data fetching — this is Next.js App Router.
+Do NOT import from server modules in client components.
+Do NOT add comments explaining what the code does — only add a comment
+if there's a non-obvious constraint or workaround.
+Do NOT create new files — add the function to actions.ts.
+```
+
+These prevent the model from drifting into patterns it learned from older tutorials.
+
+## Stack-specific phrases that work
+
+Use these exact phrases to anchor the AI to this stack:
+
+| Goal | Use this phrase |
+|---|---|
+| Force Server Component | "This is a Server Component — do not add `'use client'`" |
+| Force Server Action | "Add `'use server'` at the top of the file, validate with Zod before any DB call" |
+| Supabase auth | "Use `getUser()` from `@/lib/supabase/server`, not `getSession()`" |
+| Drizzle query | "Query with Drizzle, not raw SQL — scope with `eq(table.userId, user.id)`" |
+| RLS reminder | "Assume RLS is enabled — the DB enforces ownership, so no need to re-check in application code after the initial auth guard" |
+| Optimistic UI | "Use `useOptimistic` with a reducer, wrapped in `startTransition`" |
+
+## A complete working prompt (task tracker example)
+
+```text
+Stack: Next.js 16 App Router, Supabase, Drizzle ORM, Zod, TypeScript strict.
+File: src/app/demos/tasks/actions.ts
+
+Add three Server Actions: createTask, toggleTask, deleteTask.
+
+Rules:
+- "use server" at top of file
+- Call getUser() from @/lib/supabase/server first in each action; throw if null
+- Validate title with z.string().min(1).max(200).trim()
+- All Drizzle queries must scope with .where(eq(tasks.userId, user.id))
+- Call revalidatePath("/demos/tasks") after each mutation
+- No try/catch — let errors propagate
+
+The tasks table schema (already exists in @/lib/db/schema.ts):
+  id: uuid, userId: text, title: text, completed: boolean, createdAt: timestamp
+```
+
+Copy, adjust the table name and fields, and you have a working actions file in one shot.
+
+## When to stop prompting and read the code
+
+AI tools are fastest at scaffolding and slowest at subtle bugs. Once you have working code:
+
+- **Run `pnpm check` and `pnpm typecheck`** — fix anything flagged before asking the AI to add features
+- **Read every line before shipping** — the AI does not know your RLS policies, your rate limits, or what happens when a user submits twice
+- **Test the unhappy paths yourself** — what happens if the user submits an empty form? If they hit the route unauthenticated? The AI tested none of this
