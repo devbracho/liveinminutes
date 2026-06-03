@@ -5,7 +5,19 @@ category: "auth"
 order: 1
 ---
 
+There are two separate things that can break magic links. Fix them in order.
+
+## The most common cause: wrong Site URL
+
+**Before touching SMTP at all**, check your Site URL. Supabase uses it as the base when building magic link emails. If it says `http://localhost:3000`, every email sent to real users contains a link that points at your laptop — the email arrives fine but the link goes nowhere.
+
+Go to **Authentication → URL Configuration → Site URL** and make sure it is your production domain, not localhost. This single change fixes most "magic link not working" reports.
+
+---
+
 Supabase ships with a shared SMTP service for development. It caps out at **2–3 OTP emails per hour** across your entire project. Any real traffic hits this limit immediately — users see *"email rate limit exceeded"* and can't sign in.
+
+**If you don't have a custom domain yet:** keep Supabase's built-in SMTP (leave custom SMTP disabled). It works for all email addresses, the rate limit is fine for early-stage traffic, and the Site URL fix above is all you need. Come back to this guide when you buy a domain.
 
 The fix is to connect your own email provider. [Resend](https://resend.com) is the fastest option: free up to 3,000 emails/month, takes about 3 minutes to set up.
 
@@ -38,7 +50,9 @@ Use the exact `/auth/callback` path — not a wildcard `/**`.
 
 ### Quick start: use Resend's shared domain
 
-If you don't have a custom domain yet, Resend lets you send from `onboarding@resend.dev` for testing. Use that as your sender email to unblock yourself immediately, then swap it for your real domain later.
+If you don't have a custom domain yet, Resend lets you send from `onboarding@resend.dev` for testing — **but it can only deliver to the email address of your Resend account owner**. Every other user will get an error. This is fine for solo testing; it is not a substitute for a verified domain in production.
+
+If you need magic links to work for all users right now and you don't have a domain, leave custom SMTP disabled and use Supabase's built-in sender instead.
 
 ### Add SMTP in Supabase
 
