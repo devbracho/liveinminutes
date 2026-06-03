@@ -1,0 +1,59 @@
+---
+title: "Build a site with AI, no code"
+description: "Describe an app in plain English and get a deployable site with v0, Lovable, or Bolt."
+category: "no-code"
+order: 1
+---
+
+You will turn a sentence into a working, deployable web app using an AI app builder, then own the code afterward. These tools generate real React/Next.js you can export, so you are not locked in.
+
+## 1. Pick a builder
+
+| Tool | Best for | Output | Link |
+| ---- | -------- | ------ | ---- |
+| **v0** (Vercel) | UI and Next.js pages with shadcn/ui | React you can copy or deploy to Vercel | [v0.app](https://v0.app) |
+| **Lovable** | Full apps with Supabase auth + database | Full repo, GitHub sync | [lovable.dev](https://lovable.dev) |
+| **Bolt.new** (StackBlitz) | Full-stack apps in the browser | Runs and edits live, downloadable | [bolt.new](https://bolt.new) |
+| **Replit Agent** | Build + host in one place | Hosted app | [replit.com](https://replit.com) |
+
+For this stack (Next.js + shadcn + Supabase), **v0** matches the design system best and **Lovable** wires up the database fastest.
+
+## 2. Write a builder-friendly prompt
+
+Be concrete about pages, data, and actions:
+
+```text
+Build a landing page plus a waitlist form. Fields: name, email.
+Store submissions in Supabase. Use shadcn/ui, a clean modern style,
+and a single hero with one call to action. Validate email with Zod.
+```
+
+Then iterate in small steps: "add a thank-you state after submit", "make the hero full-height on mobile."
+
+## 3. Keep ownership of the code
+
+The whole point is to not get stuck in a closed tool:
+
+- **v0**: copy the component into your repo, or click **Deploy** / push to GitHub.
+- **Lovable**: connect GitHub and let it sync the repo, then clone it locally.
+- **Bolt**: download the project or push to a repo, then run `pnpm install && pnpm dev`.
+
+Once it is in a repo, treat it like any project: review the code, run `pnpm check` and `pnpm build`, and deploy to Vercel.
+
+## 4. Wire up the real backend
+
+AI builders scaffold fast but you must secure the boundaries yourself:
+
+- Move secrets to environment variables; never ship a service key to the browser.
+- Enable **Row Level Security** on every Supabase table the builder created.
+- Re-validate every form and API input with **Zod** on the server.
+
+## 5. Ship
+
+```bash
+gh repo create my-app --public --source=. --remote=origin --push
+```
+
+Import at [vercel.com/new](https://vercel.com/new) and deploy. From here, edit by prompting the builder *or* by hand: it is your code now.
+
+> These tools change weekly. Check the current free-tier limits and export options before committing a real project to one.

@@ -1,0 +1,72 @@
+---
+title: "Generate AI images with the newest tools"
+description: "From a text prompt to a usable image with Nano Banana, Midjourney, and Flux."
+category: "ai"
+order: 2
+---
+
+You will go from a sentence to a finished image, and learn which model to reach for. The current top tier: **Google Nano Banana** (Gemini's image model, great at editing and consistency), **Midjourney v7** (best aesthetics), and **Flux** (open, controllable, self-hostable).
+
+## 1. Write a prompt that works
+
+Image models respond to structure. Name five things: **subject, setting, style, lighting, and composition.**
+
+```text
+A ceramic coffee cup on a sunlit wooden table, soft morning light,
+shallow depth of field, minimalist product photography, 35mm, warm tones.
+```
+
+Use a chat model to expand a rough idea:
+
+```text
+Turn this into a detailed image prompt with subject, setting, style,
+lighting, lens, and mood: "<your idea>"
+```
+
+## 2. Pick the right model
+
+| Model | Strength | Where |
+| ----- | -------- | ----- |
+| **Nano Banana** (Gemini) | Editing, multi-image consistency, text in images | [gemini.google.com](https://gemini.google.com) / [aistudio.google.com](https://aistudio.google.com) |
+| **Midjourney v7** | Best-looking results, art direction | [midjourney.com](https://www.midjourney.com) |
+| **Flux.1** | Open weights, fine control, API and local | [bfl.ai](https://bfl.ai) / [replicate.com](https://replicate.com) |
+| **GPT Image (DALL-E successor)** | In-chat editing, follows instructions literally | [chatgpt.com](https://chatgpt.com) |
+| **Ideogram** | Crisp text and logos | [ideogram.ai](https://ideogram.ai) |
+
+Rule of thumb: **Nano Banana** to edit an existing image or keep a character consistent, **Midjourney** for the prettiest hero shot, **Flux** when you need an API or to run it yourself.
+
+## 3. Iterate, don't restart
+
+- Change one variable at a time (lighting, then lens, then style).
+- For edits, describe only the change: "same image, replace the background with a beach at sunset."
+- Keep a short list of phrases that worked; reuse them as a house style.
+
+## 4. Generate from code (Flux on Replicate)
+
+```bash
+export REPLICATE_API_TOKEN=...   # server-only secret, never NEXT_PUBLIC_
+```
+
+```ts
+const res = await fetch("https://api.replicate.com/v1/predictions", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.REPLICATE_API_TOKEN}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    version: "black-forest-labs/flux-1.1-pro",
+    input: { prompt: "a ceramic coffee cup in soft morning light" },
+  }),
+});
+```
+
+Call this only from a Route Handler or Server Action so the token never reaches the browser.
+
+## 5. Finishing touches
+
+- **Upscale** with the model's own upscaler, Magnific, or Topaz.
+- **Remove backgrounds** with [remove.bg](https://www.remove.bg) or Photoroom.
+- Check licensing before commercial use, and note many models embed invisible provenance watermarks (e.g. Google's SynthID).
+
+> Model names and versions change fast. Confirm the current best option before a large or paid batch.

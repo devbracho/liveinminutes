@@ -1,4 +1,13 @@
-import { CheckSquare, LayoutDashboard, MessageSquare, ShoppingCart } from "lucide-react";
+import {
+  CalendarClock,
+  CheckSquare,
+  Clock,
+  FileText,
+  LayoutDashboard,
+  Link2,
+  MessageSquare,
+  ShoppingCart,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +51,38 @@ const demos = [
     title: "Storefront",
     description: "Product catalog, cart in URL state, and checkout with validated payloads.",
     stack: ["URL state", "Zod", "next/image"],
+    live: true,
+  },
+  {
+    href: "/demos/timeclock",
+    icon: Clock,
+    title: "Employee time clock",
+    description: "Staff clock in and out of shifts. Per-user time entries secured with RLS.",
+    stack: ["Server Actions", "Drizzle", "RLS"],
+    live: true,
+  },
+  {
+    href: "/demos/booking",
+    icon: CalendarClock,
+    title: "Appointment booking",
+    description: "Schedule, confirm, and cancel appointments with validated, per-user data.",
+    stack: ["Server Actions", "Zod", "RLS"],
+    live: true,
+  },
+  {
+    href: "/demos/invoice",
+    icon: FileText,
+    title: "Invoice generator",
+    description: "Build line-item invoices with live totals and print to PDF. No backend needed.",
+    stack: ["Client state", "Intl", "Print CSS"],
+    live: true,
+  },
+  {
+    href: "/demos/links",
+    icon: Link2,
+    title: "Link-in-bio + QR",
+    description: "A single page of links with a live preview and a scannable QR code.",
+    stack: ["Client state", "next/image", "QR"],
     live: true,
   },
 ];

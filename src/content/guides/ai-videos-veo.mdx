@@ -1,0 +1,67 @@
+---
+title: "Make AI videos with Veo 3.1"
+description: "Write the prompt in ChatGPT, generate the clip in Veo 3.1, and assemble a finished video."
+category: "ai"
+order: 1
+---
+
+Google's **Veo 3.1** is currently the strongest general text-to-video model: it generates video *and* native audio (dialogue, sound effects, ambient noise) together, with strong physics and prompt adherence. This is the fastest path from idea to a watchable clip.
+
+## 1. Draft the prompt with a chat model
+
+Video models reward specific, structured prompts. Use ChatGPT (or Gemini / Claude) to expand a one-line idea into a shot list. A reliable prompt template:
+
+```text
+You are a cinematographer. Turn my idea into a Veo 3.1 prompt.
+Idea: <your idea>
+Return: subject, action, setting, camera movement, lighting,
+lens/style, mood, and any dialogue or sound effects.
+Keep it to one vivid paragraph.
+```
+
+A good Veo prompt names six things: **subject, action, setting, camera move, lighting, and style.** Add audio in plain language ("she whispers: 'we're not alone'", "rain on a tin roof").
+
+## 2. Generate the clip in Veo 3.1
+
+Veo 3.1 is available in several surfaces. Pick by goal:
+
+| Surface | Best for | Link |
+| ------- | -------- | ---- |
+| **Google Flow** | Full filmmaking: scenes, camera controls, extend clips | [labs.google/flow](https://labs.google/flow) |
+| **Gemini app** | Quick single clips | [gemini.google.com](https://gemini.google.com) |
+| **Google AI Studio / Gemini API** | Automating generation from code | [ai.google.dev/gemini-api/docs/video](https://ai.google.dev/gemini-api/docs/video) |
+
+Veo 3.1 adds controls worth using:
+
+- **Ingredients to video**: feed reference images of a character, object, or scene to keep them consistent.
+- **First and last frame**: provide two images and Veo animates the transition between them.
+- **Extend**: continue a clip past its original length while keeping visual and audio continuity.
+- **1080p / 4K** output for editing-grade footage.
+
+## 3. Keep characters and style consistent
+
+For anything longer than one shot, lock identity first:
+
+1. Generate or pick a single clean reference image of your character.
+2. Use it as an "ingredient" in every shot so the face and outfit stay stable.
+3. Pass a **style reference image** (a frame whose look you like) so lighting and grade match across cuts.
+
+## 4. Other models worth trying
+
+Veo is not the only option, and the leaders shift monthly. Compare before committing:
+
+- **Runway Gen-4** ([runwayml.com](https://runwayml.com)) for strong stylized motion and editing tools.
+- **Kling 2.x** ([klingai.com](https://klingai.com)) for long, smooth motion at lower cost.
+- **OpenAI Sora** ([sora.com](https://sora.com)) for storyboarded scenes inside ChatGPT.
+- **Luma Dream Machine** ([lumalabs.ai](https://lumalabs.ai)) for fast iteration.
+
+## 5. Assemble and ship
+
+Generate clips of 5 to 8 seconds, then stitch them:
+
+- **CapCut** or **DaVinci Resolve** (free) for cutting and color.
+- **OpusClip** for turning a long video into short vertical cuts.
+
+Render once, upload to YouTube/TikTok, done. Note: Veo outputs carry an invisible **SynthID** watermark marking them as AI-generated.
+
+> Verify model names and limits before a paid run; video models update frequently and per-clip pricing changes.

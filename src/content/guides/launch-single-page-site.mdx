@@ -1,0 +1,77 @@
+---
+title: "Launch a one-page site in minutes"
+description: "Pick a look, grab the CSS, and ship a single landing page to a public URL."
+category: "design"
+order: 2
+---
+
+You will go from a blank page to a styled, deployed one-pager. The trick is to not design from scratch: pull a ready-made visual style, drop in your content, and deploy.
+
+## 1. Start from a styled skin, not a blank page
+
+Modern "design skill" libraries hand your AI coding tool (or you) a complete visual language: spacing, color, shadows, and typography that already look good together. Browse a style, then apply it.
+
+- **TypeUI design skills** ([typeui.sh/design-skills](https://www.typeui.sh/design-skills)) gives Claude, Codex, or Cursor a named aesthetic. Install it once, then pull a style:
+
+  ```bash
+  npx typeui.sh pull glassmorphism
+  ```
+
+  Other popular skins include `neumorphism`, `bento`, `neobrutalism`, `clean`, and `premium`. Tell your AI tool "build the hero using the bento design skill" and it stays on-style.
+
+- **shadcn/ui** ([ui.shadcn.com](https://ui.shadcn.com)) is the component layer this site uses. Add a polished component in one command:
+
+  ```bash
+  pnpm dlx shadcn@latest add button card badge --yes
+  ```
+
+- **tweakcn** ([tweakcn.com](https://tweakcn.com)) is a visual theme editor for shadcn/Tailwind. Tweak colors and radius, then copy the CSS variables into your `globals.css`.
+
+## 2. Scaffold the page
+
+If you are starting fresh:
+
+```bash
+pnpm create next-app@latest my-landing --ts --tailwind --app --src-dir --use-pnpm
+cd my-landing
+```
+
+Replace `src/app/page.tsx` with a single hero section. Keep it to one screen: a headline, one sentence, and one call-to-action button.
+
+## 3. Style with Tailwind v4 + CSS variables
+
+Tailwind v4 reads design tokens straight from CSS variables, so a skin from step 1 drops in cleanly. A minimal `globals.css`:
+
+```css
+@import "tailwindcss";
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.15 0 0);
+  --primary: oklch(0.55 0.22 264);
+  --radius: 0.75rem;
+}
+```
+
+Then compose with utility classes and the `cn()` helper for conditional styles. Resist hand-writing CSS; let utilities and the skin do the work.
+
+## 4. Deploy
+
+```bash
+gh repo create my-landing --public --source=. --remote=origin --push
+```
+
+Open [vercel.com/new](https://vercel.com/new), import the repo, click **Deploy**. You now have a live URL, and every push ships an update.
+
+## Resource shortlist
+
+| Need | Tool |
+| ---- | ---- |
+| Whole-page visual style | [TypeUI design skills](https://www.typeui.sh/design-skills) |
+| Components | [shadcn/ui](https://ui.shadcn.com) |
+| Theme editor | [tweakcn](https://tweakcn.com) |
+| Icons | [lucide.dev](https://lucide.dev) |
+| Fonts | [fonts.google.com](https://fonts.google.com) via `next/font` |
+| Hosting | [Vercel](https://vercel.com) |
+
+Pick one style, write three sentences of real copy, and deploy. Polish later.
