@@ -1,0 +1,29 @@
+name: Supabase keepalive
+
+# Free-tier Supabase projects pause after ~7 days without API activity.
+# Ping both projects twice a week so neither gets paused.
+on:
+  schedule:
+    - cron: "17 9 * * 1,4"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - project: liveinminutes-dev
+            ref: swltnlmpjczqssrancbe
+            key_secret: SUPABASE_KEEPALIVE_KEY_DEV
+          - project: liveinminutes-prod
+            ref: aedmalnallbtbzarogwm
+            key_secret: SUPABASE_KEEPALIVE_KEY_PROD
+    steps:
+      - name: Ping ${{ matrix.project }}
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: ${{ secrets[matrix.key_secret] }}" \
+            "https://${{ matrix.ref }}.supabase.co/rest/v1/")
+          echo "${{ matrix.project }} responded with HTTP $code"
+          test "$code" = "200"
