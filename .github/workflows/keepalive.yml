@@ -21,9 +21,11 @@ jobs:
             key_secret: SUPABASE_KEEPALIVE_KEY_PROD
     steps:
       - name: Ping ${{ matrix.project }}
+        # The REST root requires a secret key; query a real table instead —
+        # a SELECT through PostgREST (RLS-checked) is what counts as activity.
         run: |
           code=$(curl -s -o /dev/null -w "%{http_code}" \
             -H "apikey: ${{ secrets[matrix.key_secret] }}" \
-            "https://${{ matrix.ref }}.supabase.co/rest/v1/")
+            "https://${{ matrix.ref }}.supabase.co/rest/v1/guides?select=id&limit=1")
           echo "${{ matrix.project }} responded with HTTP $code"
           test "$code" = "200"
