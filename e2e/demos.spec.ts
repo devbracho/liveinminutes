@@ -3,13 +3,14 @@ import { expect, test } from "@playwright/test";
 // ── Demos index ───────────────────────────────────────────────────────────────
 
 test.describe("Demos index", () => {
-  test("renders all 8 demo cards", async ({ page }) => {
+  test("renders all 9 demo cards", async ({ page }) => {
     await page.goto("/demos");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("See the stack in action");
 
     const cards = [
       "Task tracker",
       "Realtime chat",
+      "WhatsApp AI sales bot",
       "Analytics dashboard",
       "Storefront",
       "Employee time clock",
@@ -26,7 +27,7 @@ test.describe("Demos index", () => {
   test("each card has a guide link", async ({ page }) => {
     await page.goto("/demos");
     const guideLinks = page.getByText("Get live in minutes →");
-    await expect(guideLinks).toHaveCount(8);
+    await expect(guideLinks).toHaveCount(9);
   });
 
   test("demo cards link to the correct routes", async ({ page }) => {
@@ -34,6 +35,7 @@ test.describe("Demos index", () => {
     const demoLinks = [
       "/demos/tasks",
       "/demos/chat",
+      "/demos/whatsapp",
       "/demos/dashboard",
       "/demos/store",
       "/demos/timeclock",
@@ -52,6 +54,7 @@ test.describe("Demos index", () => {
 const authGatedDemos = [
   { name: "Task tracker", path: "/demos/tasks" },
   { name: "Realtime chat", path: "/demos/chat" },
+  { name: "WhatsApp AI sales bot", path: "/demos/whatsapp" },
   { name: "Analytics dashboard", path: "/demos/dashboard" },
   { name: "Employee time clock", path: "/demos/timeclock" },
   { name: "Appointment booking", path: "/demos/booking" },
