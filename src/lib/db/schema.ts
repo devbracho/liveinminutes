@@ -81,3 +81,25 @@ export const bookings = pgTable("bookings", {
 });
 
 export type Booking = typeof bookings.$inferSelect;
+
+export const waMessages = pgTable("wa_messages", {
+  id: uuid().primaryKey().defaultRandom(),
+  userId: uuid().notNull(),
+  role: varchar({ length: 16 }).notNull(),
+  content: text().notNull(),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+});
+
+export type WaMessage = typeof waMessages.$inferSelect;
+
+export const waOrders = pgTable("wa_orders", {
+  id: uuid().primaryKey().defaultRandom(),
+  userId: uuid().notNull(),
+  product: text().notNull(),
+  quantity: integer().notNull().default(1),
+  customerName: text().notNull(),
+  status: varchar({ length: 16 }).notNull().default("pending"),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+});
+
+export type WaOrder = typeof waOrders.$inferSelect;
