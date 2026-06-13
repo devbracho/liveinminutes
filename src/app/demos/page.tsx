@@ -5,6 +5,7 @@ import {
   FileText,
   LayoutDashboard,
   Link2,
+  MessageCircle,
   MessageSquare,
   ShoppingCart,
 } from "lucide-react";
@@ -35,6 +36,17 @@ const demos = [
     title: "Realtime chat",
     description: "Supabase Realtime channels with row-level security and presence.",
     stack: ["Supabase Realtime", "RLS", "Auth"],
+    live: true,
+    premium: true,
+  },
+  {
+    href: "/demos/whatsapp",
+    guide: "/guides/build-whatsapp-ai-bot",
+    icon: MessageCircle,
+    title: "WhatsApp AI sales bot",
+    description:
+      "A streaming AI assistant that chats like WhatsApp, answers product questions, and places orders with tool calls.",
+    stack: ["AI SDK", "Tool calling", "RLS"],
     live: true,
     premium: true,
   },
