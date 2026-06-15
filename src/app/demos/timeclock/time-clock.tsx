@@ -1,6 +1,10 @@
 "use client";
 
-import { Clock, LogIn, LogOut } from "lucide-react";
+import {
+  ClockIcon as Clock,
+  SignInIcon as LogIn,
+  SignOutIcon as LogOut,
+} from "@phosphor-icons/react/ssr";
 import { useEffect, useState, useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

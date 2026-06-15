@@ -1,6 +1,10 @@
 "use client";
 
-import { Plus, Printer, Trash2 } from "lucide-react";
+import {
+  PlusIcon as Plus,
+  PrinterIcon as Printer,
+  TrashIcon as Trash2,
+} from "@phosphor-icons/react/ssr";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

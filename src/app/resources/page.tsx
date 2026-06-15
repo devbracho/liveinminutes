@@ -1,4 +1,7 @@
-import { ExternalLink, Library } from "lucide-react";
+import {
+  ArrowSquareOutIcon as ExternalLink,
+  BooksIcon as Library,
+} from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

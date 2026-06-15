@@ -1,14 +1,14 @@
 import {
-  CalendarClock,
-  CheckSquare,
-  Clock,
-  FileText,
-  LayoutDashboard,
-  Link2,
-  MessageCircle,
-  MessageSquare,
-  ShoppingCart,
-} from "lucide-react";
+  CalendarDotsIcon as CalendarClock,
+  CheckSquareIcon as CheckSquare,
+  ClockIcon as Clock,
+  FileTextIcon as FileText,
+  SquaresFourIcon as LayoutDashboard,
+  LinkIcon as Link2,
+  ChatCircleIcon as MessageCircle,
+  ChatTextIcon as MessageSquare,
+  ShoppingCartIcon as ShoppingCart,
+} from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";

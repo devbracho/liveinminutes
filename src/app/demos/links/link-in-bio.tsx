@@ -1,6 +1,10 @@
 "use client";
 
-import { GripVertical, Plus, Trash2 } from "lucide-react";
+import {
+  DotsSixVerticalIcon as GripVertical,
+  PlusIcon as Plus,
+  TrashIcon as Trash2,
+} from "@phosphor-icons/react/ssr";
 import Image from "next/image";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";

@@ -1,6 +1,10 @@
 "use client";
 
-import { CalendarPlus, Trash2, X } from "lucide-react";
+import {
+  CalendarPlusIcon as CalendarPlus,
+  TrashIcon as Trash2,
+  XIcon as X,
+} from "@phosphor-icons/react/ssr";
 import { useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
