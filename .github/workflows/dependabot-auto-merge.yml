@@ -1,0 +1,47 @@
+name: Dependabot auto-merge
+
+# Auto-merge Dependabot PRs once the CI workflow finishes successfully.
+#
+# This runs via `workflow_run` (not `pull_request`) on purpose: a PR-triggered
+# workflow from Dependabot only gets a read-only token, but a `workflow_run`
+# handler executes from the default branch with the write scope needed to merge.
+# It only fires after CI has *completed successfully*, so nothing merges red.
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    # Only act on a green CI run that came from a Dependabot pull request.
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      startsWith(github.event.workflow_run.head_branch, 'dependabot/')
+    steps:
+      - name: Find the pull request for this branch
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          number=$(gh pr list --repo "$GITHUB_REPOSITORY" \
+            --head "$HEAD_BRANCH" --state open \
+            --json number --jq '.[0].number // empty')
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+
+      - name: Approve and squash-merge
+        if: steps.pr.outputs.number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ steps.pr.outputs.number }}
+        run: |
+          gh pr review "$PR" --repo "$GITHUB_REPOSITORY" --approve || true
+          gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --squash --delete-branch
