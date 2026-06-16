@@ -37,11 +37,14 @@ jobs:
             --json number --jq '.[0].number // empty')
           echo "number=$number" >> "$GITHUB_OUTPUT"
 
-      - name: Approve and squash-merge
+      - name: Approve and enable auto-merge
         if: steps.pr.outputs.number != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR: ${{ steps.pr.outputs.number }}
         run: |
           gh pr review "$PR" --repo "$GITHUB_REPOSITORY" --approve || true
-          gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --squash --delete-branch
+          # --auto enables native auto-merge: merges once the PR is up to date
+          # and green. This is robust under a "require branches up to date" rule,
+          # where an immediate merge of a behind branch would otherwise error.
+          gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --auto --squash --delete-branch
