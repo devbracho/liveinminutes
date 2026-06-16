@@ -5,6 +5,11 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    # Wait this many days after a release before opening a PR. Keeps Dependabot
+    # (and the auto-merge workflow) from landing packages that are newer than the
+    # local pnpm `minimumReleaseAge` supply-chain policy will let us install.
+    cooldown:
+      default-days: 7
     groups:
       next:
         patterns: ["next", "react", "react-dom", "@types/react*"]
@@ -21,3 +26,5 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
