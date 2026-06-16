@@ -1,6 +1,10 @@
 "use client";
 
-import { Lock, ShoppingCart, X } from "lucide-react";
+import {
+  LockIcon as Lock,
+  ShoppingCartIcon as ShoppingCart,
+  XIcon as X,
+} from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";

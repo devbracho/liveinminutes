@@ -1,4 +1,4 @@
-import { Rocket } from "lucide-react";
+import { RocketIcon as Rocket } from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";

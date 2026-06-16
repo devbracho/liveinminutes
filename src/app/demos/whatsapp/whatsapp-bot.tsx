@@ -1,8 +1,13 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
+import {
+  CheckIcon as Check,
+  ChecksIcon as CheckCheck,
+  ArrowCounterClockwiseIcon as RotateCcw,
+  PaperPlaneTiltIcon as Send,
+} from "@phosphor-icons/react/ssr";
 import { DefaultChatTransport, isToolUIPart, type UIMessage } from "ai";
-import { Check, CheckCheck, RotateCcw, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
