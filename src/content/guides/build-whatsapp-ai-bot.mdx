@@ -1,0 +1,43 @@
+---
+title: "Build a WhatsApp AI sales bot"
+description: "A streaming AI assistant that chats like WhatsApp, answers product questions, and places orders with tool calls."
+category: "ai"
+order: 4
+premium: true
+---
+
+You will build an AI sales assistant that talks to customers in a WhatsApp-style chat, answers questions about your products, and places real orders. It streams responses token-by-token and uses **tool calling** so the model can look up your catalog and write orders to the database — never inventing prices or faking confirmations.
+
+The same backend that powers this demo can sit behind the real **WhatsApp Cloud API**: instead of a web chat box, Meta's webhook delivers the customer's message to your route, and you send the reply back through the WhatsApp send-message endpoint. The AI logic, tools, and database stay identical.
+
+## Stack
+
+- Next.js 16 App Router + React 19
+- [AI SDK](https://ai-sdk.dev) (`ai` + `@ai-sdk/react`) for streaming chat and tool calls
+- An OpenAI-compatible LLM endpoint — this demo uses an NVIDIA-hosted model via `@ai-sdk/openai-compatible` (free tier at [build.nvidia.com](https://build.nvidia.com)). Swap in any provider.
+- Supabase (Postgres + Auth + RLS) with Drizzle ORM
+
+## How it works
+
+1. The client uses `useChat` from `@ai-sdk/react` with a `DefaultChatTransport` pointed at `/api/whatsapp`.
+2. The route handler authenticates the user, then calls `streamText` with two tools defined via Zod `inputSchema`:
+   - `listProducts` — returns your catalog so the model quotes real prices.
+   - `createOrder` — inserts a row into the `wa_orders` table, scoped to the signed-in user.
+3. `stopWhen: stepCountIs(5)` lets the model call a tool, read the result, and then write its final reply in the same turn.
+4. Every table has Row Level Security, so each account only ever sees its own conversation and orders.
+
+## Why tool calling matters
+
+A chatbot that only generates text will happily invent a "$9.99 oat-milk subscription" that doesn't exist. Tools turn the model into a safe front-end for *your* data: it can only quote products `listProducts` returns, and an order isn't real until `createOrder` writes the row and returns success. The system prompt tells the model never to claim an order is placed otherwise.
+
+## Choosing a model
+
+The model must support function/tool calling — not all free models do. The demo defaults to an NVIDIA Nemotron model with its reasoning pass disabled (set via `providerOptions`) so replies come back fast and short, the way a person texts. Set `NVIDIA_API_KEY` (and optionally `NVIDIA_MODEL`) in your environment. Because the provider is OpenAI-compatible, switching to another host is a one-line `baseURL` change.
+
+## Going to production on real WhatsApp
+
+To connect this to actual WhatsApp messages:
+
+1. Create a Meta developer app and add the **WhatsApp** product to get a Cloud API phone number.
+2. Point its webhook at a new route (e.g. `/api/whatsapp/webhook`) that verifies Meta's signature, extracts the inbound message, runs the same AI logic, and posts the reply back via the Graph API send-message endpoint.
+3. Map each WhatsApp sender's phone number to a customer record so conversations and orders stay separated — the same role `user_id` plays in this demo.

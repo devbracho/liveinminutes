@@ -1,12 +1,12 @@
 import {
-  ArrowRight,
-  Database,
-  Gauge,
-  GitBranch,
-  Rocket,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
+  ArrowRightIcon as ArrowRight,
+  DatabaseIcon as Database,
+  GaugeIcon as Gauge,
+  GitBranchIcon as GitBranch,
+  RocketIcon as Rocket,
+  ShieldCheckIcon as ShieldCheck,
+  SparkleIcon as Sparkles,
+} from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

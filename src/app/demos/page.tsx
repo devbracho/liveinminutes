@@ -1,13 +1,14 @@
 import {
-  CalendarClock,
-  CheckSquare,
-  Clock,
-  FileText,
-  LayoutDashboard,
-  Link2,
-  MessageSquare,
-  ShoppingCart,
-} from "lucide-react";
+  CalendarDotsIcon as CalendarClock,
+  CheckSquareIcon as CheckSquare,
+  ClockIcon as Clock,
+  FileTextIcon as FileText,
+  SquaresFourIcon as LayoutDashboard,
+  LinkIcon as Link2,
+  ChatCircleIcon as MessageCircle,
+  ChatTextIcon as MessageSquare,
+  ShoppingCartIcon as ShoppingCart,
+} from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +36,17 @@ const demos = [
     title: "Realtime chat",
     description: "Supabase Realtime channels with row-level security and presence.",
     stack: ["Supabase Realtime", "RLS", "Auth"],
+    live: true,
+    premium: true,
+  },
+  {
+    href: "/demos/whatsapp",
+    guide: "/guides/build-whatsapp-ai-bot",
+    icon: MessageCircle,
+    title: "WhatsApp AI sales bot",
+    description:
+      "A streaming AI assistant that chats like WhatsApp, answers product questions, and places orders with tool calls.",
+    stack: ["AI SDK", "Tool calling", "RLS"],
     live: true,
     premium: true,
   },

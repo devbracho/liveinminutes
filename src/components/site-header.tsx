@@ -1,4 +1,4 @@
-import { Rocket } from "lucide-react";
+import { RocketIcon as Rocket } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/auth/actions";

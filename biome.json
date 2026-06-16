@@ -11,6 +11,7 @@
       "!supabase/migrations",
       "!**/dist",
       "!**/*.css",
+      "!**/*.svg",
       "!**/playwright-report",
       "!**/test-results"
     ]
