@@ -20,7 +20,7 @@ importers:
         version: 3.0.207(react@19.2.7)(zod@4.4.3)
       '@hookform/resolvers':
         specifier: ^5.4.0
-        version: 5.4.0(react-hook-form@7.78.0(react@19.2.7))
+        version: 5.4.0(react-hook-form@7.79.0(react@19.2.7))
       '@phosphor-icons/react':
         specifier: ^2.1.10
         version: 2.1.10(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -64,8 +64,8 @@ importers:
         specifier: 19.2.7
         version: 19.2.7(react@19.2.7)
       react-hook-form:
-        specifier: ^7.78.0
-        version: 7.78.0(react@19.2.7)
+        specifier: ^7.79.0
+        version: 7.79.0(react@19.2.7)
       shadcn:
         specifier: ^4.11.0
         version: 4.11.0(typescript@6.0.3)
@@ -138,12 +138,6 @@ packages:
 
   '@adobe/css-tools@4.5.0':
     resolution: {integrity: sha512-6OzddxPio9UiWTCemp4N8cYLV2ZN1ncRnV1cVGtve7dhPOtRkleRyx32GQCYSwDYgaHU3USMm84tNsvKzRCa1Q==}
-
-  '@ai-sdk/gateway@3.0.128':
-    resolution: {integrity: sha512-t9Dyqk5thSmIzsNvVTQtZZiO3xqKGkk1hX3+GNpYmro+GuEdW+E6mKFHihb9Y1vCEt3rEyd4pbGUcin4D57FfQ==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
 
   '@ai-sdk/gateway@3.0.131':
     resolution: {integrity: sha512-CnjOZdywQaUnCyZ0N5wVNm7Sm63+NeHDVZQJKFX2IDq+t03SLwiiuoi3ILTLPlM+YSOhkQ/pvIDoR4qa98Zp5A==}
@@ -2209,12 +2203,6 @@ packages:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
 
-  ai@6.0.202:
-    resolution: {integrity: sha512-14O7uyHVa5lXyt1RzduRqM1zwOnLBN+EaE+btWiP2R7GLHd5oh+Z9uaebR785V/Y2hXlxvuQGsw2Gj6iHpkxsg==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
   ai@6.0.205:
     resolution: {integrity: sha512-F4akEGF41UdgJO3L4v+D5noVD1/czhJy6x0k9R/i1EXfxqrkBh/PdYSgRSLPiGFvrw76dzI8h4w3NYmLrTb8dw==}
     engines: {node: '>=18'}
@@ -3718,8 +3706,8 @@ packages:
     peerDependencies:
       react: ^19.2.7
 
-  react-hook-form@7.78.0:
-    resolution: {integrity: sha512-EEZqc+N23moyzTlz61Pj+JvcXo76ICkpfOZo8JZw+sM4+wLQGh6nI2Ms+PdMOYNluFu0ghlM7B8mCzhRYtJCnA==}
+  react-hook-form@7.79.0:
+    resolution: {integrity: sha512-mhYp/MTmXvzYX6AJcJVko0rktoIhhmRnEouObj4wF5i/tCttgJvnp1+9wRkpITZjDTqpo4IOSJqu0dBlPlV/Lw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -4412,13 +4400,6 @@ snapshots:
 
   '@adobe/css-tools@4.5.0': {}
 
-  '@ai-sdk/gateway@3.0.128(zod@4.4.3)':
-    dependencies:
-      '@ai-sdk/provider': 3.0.10
-      '@ai-sdk/provider-utils': 4.0.28(zod@4.4.3)
-      '@vercel/oidc': 3.2.0
-      zod: 4.4.3
-
   '@ai-sdk/gateway@3.0.131(zod@4.4.3)':
     dependencies:
       '@ai-sdk/provider': 3.0.10
@@ -4965,10 +4946,10 @@ snapshots:
     dependencies:
       hono: 4.12.25
 
-  '@hookform/resolvers@5.4.0(react-hook-form@7.78.0(react@19.2.7))':
+  '@hookform/resolvers@5.4.0(react-hook-form@7.79.0(react@19.2.7))':
     dependencies:
       '@standard-schema/utils': 0.3.0
-      react-hook-form: 7.78.0(react@19.2.7)
+      react-hook-form: 7.79.0(react@19.2.7)
 
   '@img/colour@1.1.0':
     optional: true
@@ -6356,14 +6337,6 @@ snapshots:
   acorn@8.16.0: {}
 
   agent-base@7.1.4: {}
-
-  ai@6.0.202(zod@4.4.3):
-    dependencies:
-      '@ai-sdk/gateway': 3.0.128(zod@4.4.3)
-      '@ai-sdk/provider': 3.0.10
-      '@ai-sdk/provider-utils': 4.0.28(zod@4.4.3)
-      '@opentelemetry/api': 1.9.1
-      zod: 4.4.3
 
   ai@6.0.205(zod@4.4.3):
     dependencies:
@@ -8025,7 +7998,7 @@ snapshots:
       react: 19.2.7
       scheduler: 0.27.0
 
-  react-hook-form@7.78.0(react@19.2.7):
+  react-hook-form@7.79.0(react@19.2.7):
     dependencies:
       react: 19.2.7
 
