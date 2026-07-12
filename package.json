@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.51",
-    "@ai-sdk/react": "^3.0.210",
+    "@ai-sdk/react": "^4.0.16",
     "@hookform/resolvers": "^5.4.0",
     "@phosphor-icons/react": "^2.1.10",
     "@supabase/ssr": "^0.12.0",
