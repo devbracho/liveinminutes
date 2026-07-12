@@ -31,7 +31,7 @@
     "next": "16.2.9",
     "next-mdx-remote": "^6.0.0",
     "postgres": "^3.4.9",
-    "radix-ui": "^1.6.0",
+    "radix-ui": "^1.6.1",
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "react-hook-form": "^7.80.0",
