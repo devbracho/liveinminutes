@@ -11,6 +11,9 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     strategy:
+      # One paused/unreachable project must NOT cancel the other project's
+      # ping — otherwise a paused dev can take prod down with it.
+      fail-fast: false
       matrix:
         include:
           - project: liveinminutes-dev
@@ -21,11 +24,22 @@ jobs:
             key_secret: SUPABASE_KEEPALIVE_KEY_PROD
     steps:
       - name: Ping ${{ matrix.project }}
-        # The REST root requires a secret key; query a real table instead —
-        # a SELECT through PostgREST (RLS-checked) is what counts as activity.
+        # A SELECT through PostgREST (RLS-checked) with a secret key is what
+        # counts as activity. A paused project's subdomain stops resolving, so
+        # curl fails with an empty/000 http_code — detect that and print an
+        # actionable message instead of a cryptic curl exit code.
         run: |
-          code=$(curl -s -o /dev/null -w "%{http_code}" \
+          code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 20 \
             -H "apikey: ${{ secrets[matrix.key_secret] }}" \
-            "https://${{ matrix.ref }}.supabase.co/rest/v1/guides?select=id&limit=1")
-          echo "${{ matrix.project }} responded with HTTP $code"
-          test "$code" = "200"
+            "https://${{ matrix.ref }}.supabase.co/rest/v1/guides?select=id&limit=1") || true
+          echo "${{ matrix.project }} responded with HTTP ${code:-000}"
+          if [ "$code" = "200" ]; then
+            echo "✅ ${{ matrix.project }} is alive"
+            exit 0
+          fi
+          if [ -z "$code" ] || [ "$code" = "000" ]; then
+            echo "::error title=Supabase project paused::${{ matrix.project }} (${{ matrix.ref }}) is unreachable — most likely PAUSED. A ping cannot revive it; restore it manually: https://supabase.com/dashboard/project/${{ matrix.ref }}"
+          else
+            echo "::error title=Supabase keepalive failed::${{ matrix.project }} returned HTTP $code (expected 200) — check the ${{ matrix.key_secret }} repo secret and RLS on the guides table."
+          fi
+          exit 1
