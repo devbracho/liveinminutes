@@ -14,6 +14,35 @@ export const profiles = pgTable("profiles", {
 
 export type Profile = typeof profiles.$inferSelect;
 
+export const payments = pgTable("payments", {
+  id: uuid().primaryKey().defaultRandom(),
+  paymentId: text().notNull().unique(),
+  userId: uuid().notNull(),
+  kind: varchar({ length: 16 }).notNull(),
+  plan: varchar({ length: 16 }),
+  orderId: text().notNull(),
+  priceAmount: integer().notNull(),
+  status: varchar({ length: 32 }).notNull(),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Payment = typeof payments.$inferSelect;
+export type NewPayment = typeof payments.$inferInsert;
+
+export const storeOrders = pgTable("store_orders", {
+  id: uuid().primaryKey().defaultRandom(),
+  userId: uuid().notNull(),
+  items: text().array().notNull(),
+  total: integer().notNull(),
+  status: varchar({ length: 16 }).notNull().default("pending"),
+  paymentId: text(),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  paidAt: timestamp({ withTimezone: true }),
+});
+
+export type StoreOrder = typeof storeOrders.$inferSelect;
+export type NewStoreOrder = typeof storeOrders.$inferInsert;
+
 export const guides = pgTable("guides", {
   id: uuid().primaryKey().defaultRandom(),
   slug: varchar({ length: 128 }).notNull().unique(),
