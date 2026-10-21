@@ -1,9 +1,12 @@
+import { randomUUID } from "node:crypto";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { PRODUCTS } from "@/app/demos/store/products";
 import { getUserPremiumStatus } from "@/lib/auth/premium";
-import { createCustomInvoice } from "@/lib/payments/nowpayments";
+import { db, schema } from "@/lib/db";
+import { buildStoreOrderId, createCustomInvoice } from "@/lib/payments/nowpayments";
+import { getUser } from "@/lib/supabase/server";
 
 const bodySchema = z.object({
   items: z.array(z.string()).min(1),
@@ -19,6 +22,11 @@ async function getOrigin(_req: Request) {
 }
 
 export async function POST(request: Request) {
+  const user = await getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+  }
+
   const body = await request.json().catch(() => null);
   const parsed = bodySchema.safeParse(body);
   if (!parsed.success) {
@@ -48,16 +56,31 @@ export async function POST(request: Request) {
 
   const total = cartProducts.reduce((sum, p) => sum + p.price, 0);
   const description = cartProducts.map((p) => p.name).join(", ");
-  const orderId = `store:${Date.now()}`;
+  const storeOrderId = randomUUID();
+  const orderId = buildStoreOrderId(user.id, storeOrderId);
   const origin = await getOrigin(request);
 
-  const url = await createCustomInvoice({
-    priceAmount: total,
-    description,
-    orderId,
-    ipnCallbackUrl: `${origin}/api/payments/nowpayments/webhook`,
-    successUrl: `${origin}/demos/store`,
-    cancelUrl: `${origin}/demos/store`,
+  let url: string;
+  try {
+    url = await createCustomInvoice({
+      priceAmount: total,
+      description,
+      orderId,
+      ipnCallbackUrl: `${origin}/api/payments/nowpayments/webhook`,
+      successUrl: `${origin}/demos/store`,
+      cancelUrl: `${origin}/demos/store`,
+    });
+  } catch {
+    return NextResponse.json({ error: "Could not start checkout." }, { status: 500 });
+  }
+
+  // Record the order only once the invoice exists, so a failed invoice leaves no orphan row.
+  await db.insert(schema.storeOrders).values({
+    id: storeOrderId,
+    userId: user.id,
+    items: cartProducts.map((p) => p.id),
+    total,
+    status: "pending",
   });
 
   return NextResponse.json({ url });

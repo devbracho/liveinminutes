@@ -11,6 +11,28 @@ export type PlanKey = keyof typeof PRICES;
 
 export const PREMIUM_DAYS = 30;
 
+export type ParsedOrder =
+  | { kind: "premium"; userId: string; plan: PlanKey }
+  | { kind: "store"; userId: string; storeOrderId: string };
+
+export function addDays(from: Date, days: number): Date {
+  const next = new Date(from);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+export function computeMonthlyExpiry(currentExpiry: Date | null, now: Date): Date {
+  const base = currentExpiry && currentExpiry > now ? currentExpiry : now;
+  return addDays(base, PREMIUM_DAYS);
+}
+
+export function isLifetimeProfile(profile: {
+  isPremium: boolean;
+  premiumExpiresAt: Date | null;
+}): boolean {
+  return profile.isPremium && profile.premiumExpiresAt === null;
+}
+
 type CreateInvoiceArgs = {
   plan: PlanKey;
   orderId: string;
@@ -82,10 +104,22 @@ export function buildOrderId(userId: string, plan: PlanKey): string {
   return `${userId}:${plan}:${Date.now()}`;
 }
 
-export function parseOrderId(orderId: string): { userId: string; plan: PlanKey } | null {
-  const [userId, plan] = orderId.split(":");
+export function buildStoreOrderId(userId: string, storeOrderId: string): string {
+  return `store:${userId}:${storeOrderId}`;
+}
+
+export function parseOrderId(orderId: string): ParsedOrder | null {
+  const parts = orderId.split(":");
+
+  if (parts[0] === "store") {
+    const [, userId, storeOrderId] = parts;
+    if (!userId || !storeOrderId) return null;
+    return { kind: "store", userId, storeOrderId };
+  }
+
+  const [userId, plan] = parts;
   if (!userId || (plan !== "monthly" && plan !== "lifetime")) return null;
-  return { userId, plan };
+  return { kind: "premium", userId, plan };
 }
 
 type CreateCustomInvoiceArgs = {
